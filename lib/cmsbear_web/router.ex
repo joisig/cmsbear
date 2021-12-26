@@ -18,6 +18,7 @@ defmodule CmsbearWeb.Router do
     pipe_through :browser
 
     get "/", PageController, :index
+    get "/:slug", PageController, :by_slug
   end
 
   # Other scopes may use custom stacks.
