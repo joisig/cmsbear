@@ -34,6 +34,19 @@ config :logger, :console,
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason
 
+# OpenID Connect configuration
+config :cmsbear, :openid_connect_providers,
+  google: [
+    discovery_document_uri: "https://accounts.google.com/.well-known/openid-configuration",
+    client_id: "503235626927-ti2snvjb37vtlevo8srsinaf8m24uvrt.apps.googleusercontent.com",
+    client_secret: "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",
+    redirect_uri: "https://joitestwww.eu.ngrok.io/auth/oidc/callback",
+    response_type: "code",
+    scope: "openid email profile"
+  ]
+
+config :openid_connect, :initialization_delay_ms, 3000
+
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"

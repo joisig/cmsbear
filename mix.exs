@@ -48,7 +48,10 @@ defmodule Cmsbear.MixProject do
       {:gettext, "~> 0.18"},
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
-      {:earmark, "~> 1.4"}
+
+      {:timex, "~> 3.7"},
+      {:earmark, "~> 1.4"},
+      {:openid_connect, git: "https://github.com/CrankWheel/openid_connect", ref: "0d63a3c27d85cae2de93d67d3bc77adcf5d6110a"}
     ]
   end
 

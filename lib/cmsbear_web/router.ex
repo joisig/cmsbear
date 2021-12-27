@@ -19,6 +19,9 @@ defmodule CmsbearWeb.Router do
 
     get "/", PageController, :index
     get "/:slug", PageController, :by_slug
+
+    get "/auth/oidc/initiate", OidcController, :initiate
+    get "/auth/oidc/callback", OidcController, :signin
   end
 
   # Other scopes may use custom stacks.

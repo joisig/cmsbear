@@ -36,4 +36,6 @@ defmodule CmsbearWeb.PageController do
   # TODO how to access control files and images? Should be determined by access level of least-restrictive document(s) that references that file...
 
   # TODO RSS feed
+
+  # TODO add the concept of an account (i.e. one for each Bear database uploader)
 end
