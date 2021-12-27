@@ -31,7 +31,7 @@ defmodule CmsbearWeb.PageController do
     end
   end
 
-  # TODO add access control
+  # TODO add upload mechanism
 
   # TODO add way to browse a particular tag
 
