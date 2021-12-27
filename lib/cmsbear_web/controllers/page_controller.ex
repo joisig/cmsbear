@@ -1,17 +1,12 @@
 defmodule CmsbearWeb.PageController do
   use CmsbearWeb, :controller
 
+  alias Cmsbear.ReadBear
+  alias Cmsbear.Markup
+  alias CmsbearWeb.Auth
+
   def index(conn, _params) do
     render(conn, "index.html")
-  end
-
-  # TODO do as an output plugin for Earmark?
-  def replace_image_links(html) do
-    Regex.replace(~r/\[image:([^]]+)]/, html, fn _, path -> "<img src='/bimg/#{path}' width=100%/>" end)
-  end
-
-  def replace_file_links(html) do
-    Regex.replace(~r/\[file:([^\/]+\/([^]]+))]/, html, fn _, path, filename -> "<a href='/bfile/#{path}'>#{filename}</a>" end)
   end
 
   def by_slug(conn, %{"slug" => slug}) do
@@ -19,10 +14,21 @@ defmodule CmsbearWeb.PageController do
     # TODO
     # Redirect to canonical URL that includes ID?
     # Or preferentially match exactly to slug that is embedded in a specific way in document?
-    [article|_rest] = Cmsbear.ReadBear.notes_by_title(title_components)
-    {:ok, html, _} = Earmark.as_html(article.text)
-    html = html |> replace_image_links() |> replace_file_links()
-    conn |> html(html)
+    [article|_rest] = ReadBear.notes_by_title(title_components)
+
+    authenticated = case Application.get_env(:cmsbear, :public_tag) in Markup.tags(article.text) do
+      true ->
+        true
+      _ ->
+        Auth.is_logged_in_as_owner(conn)
+    end
+
+    case authenticated do
+      true ->
+        conn |> html(Markup.note_to_html(article.text))
+      _ ->
+        conn |> resp(404, "")
+    end
   end
 
   # TODO add access control

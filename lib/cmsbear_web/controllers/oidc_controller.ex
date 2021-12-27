@@ -1,6 +1,8 @@
 defmodule CmsbearWeb.OidcController do
   use CmsbearWeb, :controller
 
+  alias CmsbearWeb.Auth
+
   require Logger
 
   def initiate(conn, _params) do
@@ -31,8 +33,7 @@ defmodule CmsbearWeb.OidcController do
     IO.inspect claims
 
     conn
-    |> put_session(:login_time, Timex.now)
-    |> put_session(:logged_in_email, email)
+    |> Auth.record_login(email)
     |> redirect(external: "/")
   end
 

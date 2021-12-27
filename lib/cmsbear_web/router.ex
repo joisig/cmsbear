@@ -17,11 +17,11 @@ defmodule CmsbearWeb.Router do
   scope "/", CmsbearWeb do
     pipe_through :browser
 
-    get "/", PageController, :index
-    get "/:slug", PageController, :by_slug
-
     get "/auth/oidc/initiate", OidcController, :initiate
     get "/auth/oidc/callback", OidcController, :signin
+
+    get "/", PageController, :index
+    get "/:slug", PageController, :by_slug
   end
 
   # Other scopes may use custom stacks.

@@ -8,7 +8,9 @@
 import Config
 
 config :cmsbear,
-  ecto_repos: [Cmsbear.Repo]
+  ecto_repos: [Cmsbear.Repo],
+  owner_email: "joi@quarter.is",
+  public_tag: "#recipe"
 
 # Configures the endpoint
 config :cmsbear, CmsbearWeb.Endpoint,
