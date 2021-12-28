@@ -40,4 +40,14 @@ defmodule Cmsbear.ReadBear do
     :ok = Sqlite3.release(conn, statement)
     result
   end
+
+  def notes_by_content(content_string) do
+    {:ok, conn} = Sqlite3.open("beardata/bear.sqlite")
+    {:ok, statement} = Sqlite3.prepare(conn,
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1")
+    :ok = Sqlite3.bind(conn, statement, ["%#{content_string}%"])
+    results = db_results(conn, statement, [:text, :title, :uid], [])
+    :ok = Sqlite3.release(conn, statement)
+    results
+  end
 end

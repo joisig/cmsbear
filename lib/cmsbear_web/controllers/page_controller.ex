@@ -16,12 +16,7 @@ defmodule CmsbearWeb.PageController do
     # Or preferentially match exactly to slug that is embedded in a specific way in document?
     [article|_rest] = ReadBear.notes_by_title(title_components)
 
-    authenticated = case Application.get_env(:cmsbear, :public_tag) in Markup.tags(article.text) do
-      true ->
-        true
-      _ ->
-        Auth.is_logged_in_as_owner(conn)
-    end
+    authenticated = Auth.can_access_content(conn, [article.text])
 
     case authenticated do
       true ->
@@ -31,6 +26,9 @@ defmodule CmsbearWeb.PageController do
     end
   end
 
+  # TODO controller for retrieving images and files
+  # TODO how to access control files and images? Should be determined by access level of least-restrictive document(s) that references that file...
+
   # TODO add upload mechanism
 
   # TODO add way to browse a particular tag
@@ -39,9 +37,8 @@ defmodule CmsbearWeb.PageController do
 
   # TODO make it look pretty
 
-  # TODO how to access control files and images? Should be determined by access level of least-restrictive document(s) that references that file...
-
   # TODO RSS feed
 
   # TODO add the concept of an account (i.e. one for each Bear database uploader)
+
 end

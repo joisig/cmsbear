@@ -14,9 +14,9 @@ defmodule CmsbearWeb.OidcController do
     OpenIDConnect.authorization_uri(:google, %{"state" => "#{config}:1"})
   end
 
-  def signin(conn, %{"code" => code, "state" => state} = params) do
+  def signin(conn, %{"state" => state} = params) do
     [config_str, company_id_str] = String.split(state, ":")
-    company_id = String.to_integer(company_id_str)
+    _company_id = String.to_integer(company_id_str)
     config = String.to_existing_atom(config_str)
 
     {:ok, tokens} = OpenIDConnect.fetch_tokens(config, params)

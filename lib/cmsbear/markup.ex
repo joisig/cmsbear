@@ -10,7 +10,7 @@ defmodule Cmsbear.Markup do
 
   def note_to_html(note) do
     {:ok, html, _} = Earmark.as_html(note)
-    html = html |> replace_image_links() |> replace_file_links()
+    html |> replace_image_links() |> replace_file_links()
   end
 
   def tags(note) do

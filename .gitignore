@@ -1,6 +1,7 @@
 /beardata/
 /priv/static/bimg
 /priv/static/bfile
+/config/*.secret.exs
 
 # The directory Mix will write compiled artifacts to.
 /_build/

@@ -6,6 +6,10 @@ config :cmsbear, Cmsbear.Repo,
   pool_size: 5,
   show_sensitive_data_on_connection_error: true
 
+
+config :cmsbear,
+  file_root: "/Users/joi/projects/cmsbearfileroot"
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #
@@ -69,3 +73,6 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+
+
+import_config "#{config_env()}.secret.exs"

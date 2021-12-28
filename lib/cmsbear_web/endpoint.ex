@@ -46,5 +46,10 @@ defmodule CmsbearWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
+
+  plug :fetch_session
+  plug CmsbearWeb.AssetsPlug,
+    bear_root: Application.get_env(:cmsbear, :file_root)
+
   plug CmsbearWeb.Router
 end
