@@ -32,4 +32,9 @@ defmodule CmsbearWeb.Auth do
         [] != Enum.filter(notes_text, &(public_tag in Markup.tags(&1)))
     end
   end
+
+  def has_api_auth?(conn) do
+    key = Application.get_env(:cmsbear, :api_key)
+    [("Basic " <> key)] == Conn.get_req_header(conn, "authorization")
+  end
 end

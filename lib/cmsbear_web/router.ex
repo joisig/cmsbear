@@ -24,6 +24,14 @@ defmodule CmsbearWeb.Router do
     get "/:slug", PageController, :by_slug
   end
 
+  scope "/api", CmsbearWeb do
+    pipe_through :api
+
+    get "/hashes", AssetController, :hashes
+    post "/up/image/:guid/:filename", AssetController, :upsert_image
+    post "/up/file/:guid/:filename", AssetController, :upsert_file
+  end
+
   # Other scopes may use custom stacks.
   # scope "/api", CmsbearWeb do
   #   pipe_through :api
