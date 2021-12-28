@@ -24,10 +24,7 @@ defmodule CmsbearWeb.PageController do
     end
   end
 
-  # TODO controller for retrieving images and files
-  # TODO how to access control files and images? Should be determined by access level of least-restrictive document(s) that references that file...
-
-  # TODO add upload mechanism
+  # TODO simple Python client to perform upload/update
 
   # TODO add way to browse a particular tag
 
@@ -39,4 +36,5 @@ defmodule CmsbearWeb.PageController do
 
   # TODO add the concept of an account (i.e. one for each Bear database uploader)
 
+  # TODO bootstrap assets folder from empty
 end

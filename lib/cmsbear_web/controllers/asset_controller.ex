@@ -1,11 +1,7 @@
 defmodule CmsbearWeb.AssetController do
   use CmsbearWeb, :controller
 
-  alias CmsbearWeb.Auth
-
   def hashes(conn, _params) do
-    true = Auth.has_api_auth?(conn)
-
     json(
       conn,
       %{
@@ -15,21 +11,37 @@ defmodule CmsbearWeb.AssetController do
     )
   end
 
-  def upsert_image(conn, %{"guid" => guid, "filename" => filename, "upload" => upload}) do
-    true = Auth.has_api_auth?(conn)
+  def upsert_db(conn, %{"upload" => %Plug.Upload{path: tmp_path}}) do
+    # TODO this is really naive for now. Probably want to keep some
+    # older versions and atomically switch new queries to use the latest
+    # version of the DB file while the older queries get to complete
+    # on older files... or do something smarter.
+    case File.cp(tmp_path, root_path("bear.sqlite")) do
+      :ok ->
+        conn |> resp(201, "")
+      {:error, posix} ->
+        conn |> resp(500, Atom.to_string(posix))
+    end
+  end
 
+  def upsert_image(conn, %{"guid" => guid, "filename" => filename, "upload" => upload}) do
     upsert(conn, "bimg", guid, filename, upload)
   end
 
   def upsert_file(conn, %{"guid" => guid, "filename" => filename, "upload" => upload}) do
-    true = Auth.has_api_auth?(conn)
-
     upsert(conn, "bfile", guid, filename, upload)
   end
 
-  def upsert(conn, prefix, guid, filename, upload) do
-    IO.inspect {conn, prefix, guid, filename, upload}
-    conn |> text("ok")
+  def upsert(conn, prefix, guid, filename, %Plug.Upload{path: tmp_path}) do
+    dest_folder = Path.join([root_path(prefix)], guid)
+    File.mkdir_p(dest_folder)  # Ignore error, as it may already exist
+    dest_path = Path.join([dest_folder, filename])
+    case File.cp(tmp_path, dest_path) do
+      :ok ->
+        conn |> resp(201, "")
+      {:error, posix} ->
+        conn |> resp(500, Atom.to_string(posix))
+    end
   end
 
   def root_path(prefix) do

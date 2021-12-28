@@ -39,7 +39,11 @@ defmodule CmsbearWeb.Endpoint do
   plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
 
   plug Plug.Parsers,
-    parsers: [:urlencoded, :multipart, :json],
+    parsers: [
+      :urlencoded,
+      {:multipart, length: 134_217_728},  # 128 Mb if uploading multipart file
+      :json
+    ],
     pass: ["*/*"],
     json_decoder: Phoenix.json_library()
 

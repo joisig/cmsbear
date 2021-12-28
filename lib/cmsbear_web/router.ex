@@ -13,6 +13,24 @@ defmodule CmsbearWeb.Router do
     plug :accepts, ["json"]
   end
 
+  import CmsbearWeb.Auth
+  pipeline :api_auth do
+    plug :api_auth_plug
+  end
+
+  pipeline :owner_auth do
+    plug :owner_auth_plug
+  end
+
+  # Enables LiveDashboard behind owner-only auth.
+  import Phoenix.LiveDashboard.Router
+  scope "/" do
+    pipe_through :browser
+    pipe_through :owner_auth
+
+    live_dashboard "/phxdash", metrics: CmsbearWeb.Telemetry
+  end
+
   scope "/", CmsbearWeb do
     pipe_through :browser
 
@@ -26,30 +44,12 @@ defmodule CmsbearWeb.Router do
 
   scope "/api", CmsbearWeb do
     pipe_through :api
+    pipe_through :api_auth
 
     get "/hashes", AssetController, :hashes
+
+    post "/up/db", AssetController, :upsert_db
     post "/up/image/:guid/:filename", AssetController, :upsert_image
     post "/up/file/:guid/:filename", AssetController, :upsert_file
-  end
-
-  # Other scopes may use custom stacks.
-  # scope "/api", CmsbearWeb do
-  #   pipe_through :api
-  # end
-
-  # Enables LiveDashboard only for development
-  #
-  # If you want to use the LiveDashboard in production, you should put
-  # it behind authentication and allow only admins to access it.
-  # If your application does not have an admins-only section yet,
-  # you can use Plug.BasicAuth to set up some basic authentication
-  # as long as you are also using SSL (which you should anyway).
-  if Mix.env() in [:dev, :test] do
-    import Phoenix.LiveDashboard.Router
-
-    scope "/" do
-      pipe_through :browser
-      live_dashboard "/dashboard", metrics: CmsbearWeb.Telemetry
-    end
   end
 end

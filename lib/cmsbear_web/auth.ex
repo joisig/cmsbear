@@ -37,4 +37,18 @@ defmodule CmsbearWeb.Auth do
     key = Application.get_env(:cmsbear, :api_key)
     [("Basic " <> key)] == Conn.get_req_header(conn, "authorization")
   end
+
+  def api_auth_plug(conn, _opts) do
+    case has_api_auth?(conn) do
+      true -> conn
+      false -> conn |> Conn.resp(403, "") |> Conn.halt()
+    end
+  end
+
+  def owner_auth_plug(conn, _opts) do
+    case is_logged_in_as_owner?(conn) do
+      true -> conn
+      false -> conn |> Conn.resp(403, "") |> Conn.halt()
+    end
+  end
 end
