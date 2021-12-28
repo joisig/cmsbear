@@ -26,7 +26,11 @@ defmodule CmsbearWeb.AssetsPlug do
       ["bfile", guid, filename] -> "[file:#{guid}/#{filename}]"
     end
 
-    case Auth.can_access_content(conn, fn -> ReadBear.notes_by_content(link_text) |> Enum.map(&(&1.text)) end) do
+    get_notes = fn ->
+      ReadBear.notes_by_content(link_text)
+      |> Enum.map(&(&1.text))
+    end
+    case Auth.can_access_content?(conn, get_notes) do
       true ->
         # We do the init here rather than in the init function above, because that is what we'll
         # need to do if/when we add multi-account support (each account will have its own static root).

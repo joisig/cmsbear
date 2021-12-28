@@ -16,7 +16,7 @@ defmodule CmsbearWeb.PageController do
     # Or preferentially match exactly to slug that is embedded in a specific way in document?
     [article|_rest] = ReadBear.notes_by_title(title_components)
 
-    authenticated = Auth.can_access_content(conn, [article.text])
+    authenticated = Auth.can_access_content?(conn, [article.text])
 
     case authenticated do
       true ->

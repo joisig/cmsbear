@@ -9,13 +9,20 @@ defmodule CmsbearWeb.Auth do
   end
 
   def is_logged_in_as_owner?(conn) do
-    Conn.get_session(conn, :logged_in_email) == Application.get_env(:cmsbear, :owner_email)
+    was_owner = Conn.get_session(conn, :logged_in_email) == Application.get_env(:cmsbear, :owner_email)
+    now = Timex.now()
+    login_time = case Conn.get_session(conn, :login_time) do
+      nil -> Timex.subtract(now, Timex.Duration.from_days(10 * 365))
+      t -> t
+    end
+    not_too_old = Timex.diff(now, login_time, :days) < 30
+    was_owner and not_too_old
   end
 
-  def can_access_content(conn, notes_text) when is_list(notes_text) do
-    can_access_content(conn, fn -> notes_text end)
+  def can_access_content?(conn, notes_text) when is_list(notes_text) do
+    can_access_content?(conn, fn -> notes_text end)
   end
-  def can_access_content(conn, get_notes_text_fn) do
+  def can_access_content?(conn, get_notes_text_fn) do
     case is_logged_in_as_owner?(conn) do
       true ->
         true
