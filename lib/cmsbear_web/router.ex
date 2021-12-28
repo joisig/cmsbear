@@ -16,6 +16,7 @@ defmodule CmsbearWeb.Router do
   scope "/", CmsbearWeb do
     pipe_through :browser
 
+    get "/login", OidcController, :initiate
     get "/auth/oidc/initiate", OidcController, :initiate
     get "/auth/oidc/callback", OidcController, :signin
 
