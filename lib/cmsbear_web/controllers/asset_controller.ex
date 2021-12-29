@@ -5,6 +5,7 @@ defmodule CmsbearWeb.AssetController do
     json(
       conn,
       %{
+        "db" => file_hash(root_path("bear.sqlite")),
         "images" => all_hashes("bimg"),
         "files" => all_hashes("bfile")
       }
@@ -56,11 +57,16 @@ defmodule CmsbearWeb.AssetController do
   end
 
   def file_hash(full_path) do
-    initial_hash_state = :crypto.hash_init(:sha)
-    File.stream!(full_path, [], 16_777_216)  # Process 16 Mb at a time
-    |> Enum.reduce(initial_hash_state, &:crypto.hash_update(&2, &1))
-    |> :crypto.hash_final()
-    |> Base.encode32(case: :lower)
+    case File.stat(full_path) do
+      {:ok, _} ->
+        initial_hash_state = :crypto.hash_init(:sha)
+        File.stream!(full_path, [], 16_777_216)  # Process 16 Mb at a time
+        |> Enum.reduce(initial_hash_state, &:crypto.hash_update(&2, &1))
+        |> :crypto.hash_final()
+        |> Base.encode32(case: :lower)
+      {:error, :enoent} ->
+        ""
+    end
   end
 
   def path_hash(relative_path) do
@@ -69,11 +75,6 @@ defmodule CmsbearWeb.AssetController do
   end
 
   def all_hashes(prefix) do
-    all_paths(prefix) |> Enum.map(fn {fp, rp} ->
-      %{
-        ph: path_hash(rp),
-        ch: file_hash(fp)
-      }
-    end)
+    all_paths(prefix) |> Enum.map(fn {fp, rp} -> {path_hash(rp), file_hash(fp)} end) |> Enum.into(%{})
   end
 end
