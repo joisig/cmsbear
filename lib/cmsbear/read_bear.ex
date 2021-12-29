@@ -11,6 +11,11 @@ defmodule Cmsbear.ReadBear do
     Enum.join(parts, "")
   end
 
+  def open_db() do
+    Application.get_env(:cmsbear, :file_root) <> "/bear.sqlite"
+    |> Sqlite3.open()
+  end
+
   def db_results(conn, statement, headings, acc) do
     case Sqlite3.step(conn, statement) do
       {:row, row} ->
@@ -22,7 +27,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def notes_by_title(title_components) do
-    {:ok, conn} = Sqlite3.open("beardata/bear.sqlite")
+    {:ok, conn} = open_db()
     {:ok, statement} = Sqlite3.prepare(conn,
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ztitle like ?1")
     :ok = Sqlite3.bind(conn, statement, [make_like(title_components)])
@@ -32,7 +37,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def note_by_id(id) do
-    {:ok, conn} = Sqlite3.open("beardata/bear.sqlite")
+    {:ok, conn} = open_db()
     {:ok, statement} = Sqlite3.prepare(conn,
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZUNIQUEIDENTIFIER = ?1")
     :ok = Sqlite3.bind(conn, statement, [id])
@@ -42,7 +47,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def notes_by_content(content_string) do
-    {:ok, conn} = Sqlite3.open("beardata/bear.sqlite")
+    {:ok, conn} = open_db()
     {:ok, statement} = Sqlite3.prepare(conn,
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1")
     :ok = Sqlite3.bind(conn, statement, ["%#{content_string}%"])
