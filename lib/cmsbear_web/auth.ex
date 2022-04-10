@@ -19,17 +19,14 @@ defmodule CmsbearWeb.Auth do
     was_owner and not_too_old
   end
 
-  def can_access_content?(conn, notes_text) when is_list(notes_text) do
-    can_access_content?(conn, fn -> notes_text end)
-  end
-  def can_access_content?(conn, get_notes_text_fn) do
+  def can_access_content?(conn, note_texts) when is_list(note_texts) do
     case is_logged_in_as_owner?(conn) do
       true ->
         true
       false ->
         public_tag = Application.get_env(:cmsbear, :public_tag)
-        notes_text = get_notes_text_fn.()
-        [] != Enum.filter(notes_text, &(public_tag in Markup.tags(&1)))
+        IO.inspect note_texts
+        [] != Enum.map(note_texts, &(public_tag in Markup.tags(&1)))
     end
   end
 
