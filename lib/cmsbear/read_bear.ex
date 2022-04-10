@@ -55,4 +55,38 @@ defmodule Cmsbear.ReadBear do
     :ok = Sqlite3.release(conn, statement)
     results
   end
+
+  def special_files() do
+    %{
+      static: static_files("staticfile"),
+      layout: static_files("layout"),
+      include: static_files("include")
+    }
+  end
+
+  def static_files(of_type) do
+    {:ok, conn} = open_db()
+    {:ok, statement} = Sqlite3.prepare(conn,
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1")
+    :ok = Sqlite3.bind(conn, statement, ["%#cmsbear/#{of_type}%"])
+    results = db_results(conn, statement, [:text, :title, :uid], [])
+    :ok = Sqlite3.release(conn, statement)
+    Enum.map(results, fn obj -> parse_static_file_note(of_type, obj.text) end)
+    |> Enum.flat_map(fn
+      %{name: name} = item -> [{name, item}]
+      _ -> []
+    end)
+    |> Enum.into(%{})
+  end
+
+  def parse_static_file_note(of_type, note) do
+    case Regex.named_captures(~r/^.*\#cmsbear\/#{of_type}\n.*?```\n?name:(?<name>[^\n]+)\n.*?mime:(?<mime>[^\n]+)\n.*?====*\n(?<body>.*)```.*?$/s, note) do
+      nil ->
+        %{}
+      map ->
+        map
+    end
+    |> Enum.map(fn {key, val} -> {String.to_atom(key), val} end)
+    |> Enum.into(%{})
+  end
 end

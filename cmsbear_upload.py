@@ -70,7 +70,10 @@ def main():
   hashes = get_hashes_from_server()
 
   # Get a clean DB snapshot
-  os.remove("/tmp/bear.sqlite")
+  try:
+    os.remove("/tmp/bear.sqlite")
+  except:
+    pass
   con = sqlite3.connect(bear_db)
   cur = con.cursor()
   cur.execute("VACUUM INTO '/tmp/bear.sqlite'")
