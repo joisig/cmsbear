@@ -26,51 +26,50 @@ defmodule Cmsbear.ReadBear do
     end
   end
 
-  def notes_by_title(title_components) do
+  def get_results(query, params \\ []) do
     {:ok, conn} = open_db()
-    {:ok, statement} = Sqlite3.prepare(conn,
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ztitle like ?1")
-    :ok = Sqlite3.bind(conn, statement, [make_like(title_components)])
+    {:ok, statement} = Sqlite3.prepare(conn, query)
+    :ok = Sqlite3.bind(conn, statement, params)
     results = db_results(conn, statement, [:text, :title, :uid], [])
     :ok = Sqlite3.release(conn, statement)
     results
+  end
+
+  def notes_by_title(title_components) do
+    get_results(
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ztitle like ?1",
+      [make_like(title_components)])
   end
 
   def note_by_id(id) do
-    {:ok, conn} = open_db()
-    {:ok, statement} = Sqlite3.prepare(conn,
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZUNIQUEIDENTIFIER = ?1")
-    :ok = Sqlite3.bind(conn, statement, [id])
-    [result] = db_results(conn, statement, [:text, :title, :uid], [])
-    :ok = Sqlite3.release(conn, statement)
-    result
+    get_results(
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZUNIQUEIDENTIFIER = ?1",
+      [id])
   end
 
   def notes_by_content(content_string) do
-    {:ok, conn} = open_db()
-    {:ok, statement} = Sqlite3.prepare(conn,
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1")
-    :ok = Sqlite3.bind(conn, statement, ["%#{content_string}%"])
-    results = db_results(conn, statement, [:text, :title, :uid], [])
-    :ok = Sqlite3.release(conn, statement)
-    results
+    get_results(
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      ["%#{content_string}%"])
   end
 
   def special_files() do
     %{
       static: static_files("staticfile"),
       layout: static_files("layout"),
-      include: static_files("include")
+      include: static_files("include"),
+      hardcoded_slugs: hardcoded_slug_files()
     }
   end
 
+  def hardcoded_slug_files() do
+
+  end
+
   def static_files(of_type) do
-    {:ok, conn} = open_db()
-    {:ok, statement} = Sqlite3.prepare(conn,
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1")
-    :ok = Sqlite3.bind(conn, statement, ["%#cmsbear/#{of_type}%"])
-    results = db_results(conn, statement, [:text, :title, :uid], [])
-    :ok = Sqlite3.release(conn, statement)
+    results = get_results(
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      ["%#cmsbear/#{of_type}%"])
     Enum.map(results, fn obj -> parse_static_file_note(of_type, obj.text) end)
     |> Enum.flat_map(fn
       %{name: name} = item -> [{name, item}]
