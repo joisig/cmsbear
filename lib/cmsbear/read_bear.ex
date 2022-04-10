@@ -35,20 +35,69 @@ defmodule Cmsbear.ReadBear do
     results
   end
 
+  def get_notes(query, params \\ []) do
+    get_results(query, params)
+    |> Enum.map(&process_front_matter/1)
+  end
+
+  def process_front_matter(%{text: text} = note) do
+    front_matter = get_note_front_matter(text)
+    override_note = case Map.get(front_matter, :title, nil) do
+      nil -> %{front_matter: front_matter, text: text_without_front_matter(text)}
+      front_matter_title -> %{front_matter: front_matter, title: front_matter_title, text: text_without_front_matter(text)}
+    end
+    Map.merge(note, override_note)
+  end
+
+  def text_without_front_matter(text) when is_binary(text) do
+    Regex.split(~r/```\n?FRONTMATTER\n(?<frontmatter>.*)```/s, text)
+    |> Enum.join("\n")
+  end
+
+  def get_note_front_matter(text) when is_binary(text) do
+    front_matter = case Regex.named_captures(~r/^.*?```\n?FRONTMATTER\n(?<frontmatter>.*)```.*?$/s, text) do
+      nil ->
+        []
+      %{"frontmatter" => lines} ->
+        String.split(lines, "\n")
+    end
+    |> Enum.flat_map(fn line ->
+      case Regex.named_captures(~r/\s*(?<key>[a-zA-Z0-9_]+):\s*(?<val>.*)/, line) do
+        nil ->
+          []
+        %{"key" => key, "val" => val} -> [{key, val}]
+      end
+    end)
+    |> Enum.map(fn {key, val} ->
+      new_key = case key do
+        "canonical_slug" -> :canonical_slug
+        "layout" -> :layout
+        "description" -> :description
+        "title" -> :title
+        "date" -> :date
+        "author" -> :author
+        "canonical_url" -> :canonical_url
+        val -> val
+      end
+      {new_key, val}
+    end)
+    |> Enum.into(%{layout: "default"})
+  end
+
   def notes_by_title(title_components) do
-    get_results(
+    get_notes(
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ztitle like ?1",
       [make_like(title_components)])
   end
 
   def note_by_id(id) do
-    get_results(
+    get_notes(
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZUNIQUEIDENTIFIER = ?1",
       [id])
   end
 
   def notes_by_content(content_string) do
-    get_results(
+    get_notes(
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
       ["%#{content_string}%"])
   end
@@ -57,17 +106,21 @@ defmodule Cmsbear.ReadBear do
     %{
       static: static_files("staticfile"),
       layout: static_files("layout"),
-      include: static_files("include"),
-      hardcoded_slugs: hardcoded_slug_files()
+      include: static_files("include")
     }
   end
 
-  def hardcoded_slug_files() do
-
+  def canonical_slug_notes() do
+    get_notes(
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      ["%canonical_slug:%"])
+    |> Enum.filter(fn item -> Map.get(item.front_matter, :canonical_slug, nil) != nil end)
+    |> Enum.map(fn %{front_matter: %{canonical_slug: slug}} = item -> {slug, item} end)
+    |> Enum.into(%{})
   end
 
   def static_files(of_type) do
-    results = get_results(
+    results = get_notes(
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
       ["%#cmsbear/#{of_type}%"])
     Enum.map(results, fn obj -> parse_static_file_note(of_type, obj.text) end)

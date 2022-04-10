@@ -30,8 +30,6 @@ defmodule CmsbearWeb.OidcController do
     # email_verified is always set to true for Google.
     true = Map.get(claims, "email_verified", false)
 
-    IO.inspect claims
-
     conn
     |> Auth.record_login(email)
     |> redirect(external: "/")

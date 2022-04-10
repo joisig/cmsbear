@@ -31,17 +31,6 @@ defmodule CmsbearWeb.Router do
     live_dashboard "/phxdash", metrics: CmsbearWeb.Telemetry
   end
 
-  scope "/", CmsbearWeb do
-    pipe_through :browser
-
-    get "/login", OidcController, :initiate
-    get "/auth/oidc/initiate", OidcController, :initiate
-    get "/auth/oidc/callback", OidcController, :signin
-
-    get "/", PageController, :index
-    get "/:slug", PageController, :by_slug
-  end
-
   scope "/api", CmsbearWeb do
     pipe_through :api
     pipe_through :api_auth
@@ -51,5 +40,18 @@ defmodule CmsbearWeb.Router do
     post "/up/db", AssetController, :upsert_db
     post "/up/image/:guid/:filename", AssetController, :upsert_image
     post "/up/file/:guid/:filename", AssetController, :upsert_file
+  end
+
+  scope "/", CmsbearWeb do
+    pipe_through :browser
+
+    get "/login", OidcController, :initiate
+    get "/auth/oidc/initiate", OidcController, :initiate
+    get "/auth/oidc/callback", OidcController, :signin
+
+    get "/", PageController, :index
+    get "/:slug", PageController, :by_slug
+    get "/:slug1/:slug2", PageController, :by_slug
+    get "/:slug1/:slug2/:slug3", PageController, :by_slug
   end
 end

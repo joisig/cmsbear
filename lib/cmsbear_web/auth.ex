@@ -25,7 +25,6 @@ defmodule CmsbearWeb.Auth do
         true
       false ->
         public_tag = Application.get_env(:cmsbear, :public_tag)
-        IO.inspect note_texts
         [] != Enum.map(note_texts, &(public_tag in Markup.tags(&1)))
     end
   end
