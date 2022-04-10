@@ -24,8 +24,6 @@ defmodule CmsbearWeb.PageController do
     end
   end
 
-  # TODO simple Python client to perform upload/update
-
   # TODO add way to browse a particular tag
 
   # TODO extract tags and show separately (e.g. in sidebar)
@@ -35,6 +33,4 @@ defmodule CmsbearWeb.PageController do
   # TODO RSS feed
 
   # TODO add the concept of an account (i.e. one for each Bear database uploader)
-
-  # TODO bootstrap assets folder from empty
 end
