@@ -110,11 +110,15 @@ defmodule Cmsbear.ReadBear do
     }
   end
 
+  def get_canonical_slug(note) when is_map(note) do
+    Map.get(note.front_matter, :canonical_slug, nil)
+  end
+
   def canonical_slug_notes() do
     get_notes(
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
       ["%canonical_slug:%"])
-    |> Enum.filter(fn item -> Map.get(item.front_matter, :canonical_slug, nil) != nil end)
+    |> Enum.filter(fn item -> get_canonical_slug(item) != nil end)
     |> Enum.map(fn %{front_matter: %{canonical_slug: slug}} = item -> {slug, item} end)
     |> Enum.into(%{})
   end

@@ -9,7 +9,8 @@ defmodule CmsbearWeb.PageController do
     render(conn, "index.html")
   end
 
-  def get_canonical_or_static(path) do
+  def get_canonical_or_static(path) when is_binary(path) do
+    String.trim_trailing(path, "/")
     case ReadBear.canonical_slug_notes()[path] do
       nil ->
         case ReadBear.static_files("staticfile")[path] do
@@ -28,6 +29,7 @@ defmodule CmsbearWeb.PageController do
       nil ->
         conn |> resp(404, "")
       {:static, mime, body} ->
+        # Static files are not access controlled
         conn
         |> put_resp_content_type(mime)
         |> send_resp(200, body)
@@ -58,15 +60,34 @@ defmodule CmsbearWeb.PageController do
     case get_canonical_or_static("/" <> slug) do
       nil ->
         title_components = String.split(slug, "_")
-        # TODO
-        # Redirect to canonical URL that includes ID?
-        # Or preferentially match exactly to slug that is embedded in a specific way in document?
         [note|_rest] = ReadBear.notes_by_title(title_components)
 
-        serve_note(conn, note)
+        case Auth.can_access_content?(conn, [note.text]) do
+          true ->
+            case ReadBear.get_canonical_slug(note) do
+              nil ->
+                case make_full_slug(note.title) do
+                  "/" <> ^slug ->
+                    serve_note(conn, note)
+                  new_slug ->
+                    conn |> redirect(to: new_slug)
+                end
+              slug ->
+                conn |> redirect(to: slug)
+            end
+          false ->
+            conn |> resp(404, "")
+        end
       results ->
         serve_result_of_get_canonical_or_static(conn, results)
     end
+  end
+
+  def make_full_slug(title) when is_binary(title) do
+    downcased_and_trimmed = title |> String.downcase() |> String.trim()
+    removed = Regex.replace(~r/[^A-Za-z0-9-\s]/s, downcased_and_trimmed, "", [:global])
+    unspaced = Regex.replace(~r/\s+/s, removed, "_", [:global])
+    "/" <> unspaced
   end
 
   # TODO add way to browse a particular tag
