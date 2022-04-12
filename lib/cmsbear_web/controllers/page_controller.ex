@@ -41,7 +41,12 @@ defmodule CmsbearWeb.PageController do
   def serve_note(conn, note) do
     case Auth.can_access_content?(conn, [note.text]) do
       true ->
-        conn |> html(Markup.note_to_html(note.text))
+        html = Markup.note_to_html(note.text)
+        # TODO caching of these...
+        layouts = ReadBear.static_files("layout")
+        includes = ReadBear.static_files("include")
+        with_layout = Cmsbear.Render.render(html, note.front_matter, layouts, includes)
+        conn |> html(with_layout)
       _ ->
         conn |> resp(404, "")
     end

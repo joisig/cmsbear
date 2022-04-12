@@ -1,5 +1,4 @@
 defmodule Cmsbear.Markup do
-  # TODO do as an output plugin for Earmark?
   def replace_image_links(html) do
     Regex.replace(~r/\[image:([^]]+)]/, html, fn _, path -> "<img src='/bimg/#{path}' width=100%/>" end)
   end

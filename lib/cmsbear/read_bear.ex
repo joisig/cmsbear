@@ -50,7 +50,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def text_without_front_matter(text) when is_binary(text) do
-    Regex.split(~r/```\n?FRONTMATTER\n(?<frontmatter>.*)```/s, text)
+    Regex.split(~r/```\n?FRONTMATTER\n(?<frontmatter>.*?)```/s, text)
     |> Enum.join("\n")
   end
 
@@ -68,20 +68,7 @@ defmodule Cmsbear.ReadBear do
         %{"key" => key, "val" => val} -> [{key, val}]
       end
     end)
-    |> Enum.map(fn {key, val} ->
-      new_key = case key do
-        "canonical_slug" -> :canonical_slug
-        "layout" -> :layout
-        "description" -> :description
-        "title" -> :title
-        "date" -> :date
-        "author" -> :author
-        "canonical_url" -> :canonical_url
-        val -> val
-      end
-      {new_key, val}
-    end)
-    |> Enum.into(%{layout: "default"})
+    |> Enum.into(%{"layout" => "default"})
   end
 
   def notes_by_title(title_components) do
@@ -111,7 +98,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def get_canonical_slug(note) when is_map(note) do
-    Map.get(note.front_matter, :canonical_slug, nil)
+    Map.get(note.front_matter, "canonical_slug", nil)
   end
 
   def canonical_slug_notes() do
@@ -119,7 +106,7 @@ defmodule Cmsbear.ReadBear do
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
       ["%canonical_slug:%"])
     |> Enum.filter(fn item -> get_canonical_slug(item) != nil end)
-    |> Enum.map(fn %{front_matter: %{canonical_slug: slug}} = item -> {slug, item} end)
+    |> Enum.map(fn %{front_matter: %{"canonical_slug" => slug}} = item -> {slug, item} end)
     |> Enum.into(%{})
   end
 
@@ -136,7 +123,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def parse_static_file_note(of_type, note) do
-    case Regex.named_captures(~r/^.*\#cmsbear\/#{of_type}\n.*?```\n?name:(?<name>[^\n]+)\n.*?mime:(?<mime>[^\n]+)\n.*?====*\n(?<body>.*)```.*?$/s, note) do
+    case Regex.named_captures(~r/^.*\#cmsbear\/#{of_type}\n.*?```\n?name:\s*(?<name>[^\n]+)\n.*?mime:(?<mime>[^\n]+)\n.*?====*\n(?<body>.*)```.*?$/s, note) do
       nil ->
         %{}
       map ->
