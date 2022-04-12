@@ -7,7 +7,7 @@ defmodule Cmsbear.Render do
 
   def get_variables_used(text) do
     Regex.scan(~r/{{\s*var\s+(?<var_name>[a-zA-Z0-9]+)\s*}}/, text)
-    |> Enum.map(&(&1 |> Enum.at(1) |> String.to_existing_atom()))
+    |> Enum.map(&(&1 |> Enum.at(1)))
   end
 
   def strip_layout_from_comment(text) do
@@ -36,7 +36,13 @@ defmodule Cmsbear.Render do
     end)
 
     with_variables = Enum.reduce(get_variables_used(text), with_includes, fn var_name, acc ->
-      String.replace(acc, ~r/{{\s*var\s+#{var_name}\s*}}/, context[var_name], [:global])
+      replacement = context[var_name]
+      case replacement do
+        nil ->
+          acc
+        _ ->
+          String.replace(acc, ~r/{{\s*var\s+#{var_name}\s*}}/, replacement, [:global])
+      end
     end)
 
     {layout, without_layout_comment} = strip_layout_from_comment(with_variables)

@@ -42,8 +42,8 @@ defmodule Cmsbear.ReadBear do
 
   def process_front_matter(%{text: text} = note) do
     front_matter = get_note_front_matter(text)
-    override_note = case Map.get(front_matter, :title, nil) do
-      nil -> %{front_matter: front_matter, text: text_without_front_matter(text)}
+    override_note = case Map.get(front_matter, "title", nil) do
+      nil -> %{front_matter: Map.put(front_matter, "title", note.title), text: text_without_front_matter(text)}
       front_matter_title -> %{front_matter: front_matter, title: front_matter_title, text: text_without_front_matter(text)}
     end
     Map.merge(note, override_note)
@@ -55,7 +55,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def get_note_front_matter(text) when is_binary(text) do
-    front_matter = case Regex.named_captures(~r/^.*?```\n?FRONTMATTER\n(?<frontmatter>.*)```.*?$/s, text) do
+    front_matter = case Regex.named_captures(~r/^.*?```\n?FRONTMATTER\n(?<frontmatter>.*?)```.*?$/s, text) do
       nil ->
         []
       %{"frontmatter" => lines} ->
@@ -68,7 +68,7 @@ defmodule Cmsbear.ReadBear do
         %{"key" => key, "val" => val} -> [{key, val}]
       end
     end)
-    |> Enum.into(%{"layout" => "default"})
+    |> Enum.into(%{"layout" => "default", "language" => "en"})
   end
 
   def notes_by_title(title_components) do
