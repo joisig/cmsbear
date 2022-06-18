@@ -8,6 +8,9 @@ import sqlite3
 import unicodedata
 import urllib.parse
 
+# Finding the database file, kudos to https://github.com/andymatuschak/Bear-Markdown-Export
+
+
 HOME = os.getenv('HOME', '')
 URL=os.getenv("CMSBEAR_URL") or "https://joitestwww.eu.ngrok.io"
 API_KEY=os.getenv("CMSBEAR_API_KEY") or "h41RLrP90NsOZT0YQe5qWCCMWnUqL6AbYeBRW7RkBe1ErmhC5bwXuhCpGPO1yvtNMKotcYM4Anw7pxaE37paBkpbC6uLUee0TpH"

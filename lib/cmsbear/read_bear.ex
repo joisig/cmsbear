@@ -132,4 +132,14 @@ defmodule Cmsbear.ReadBear do
     |> Enum.map(fn {key, val} -> {String.to_atom(key), val} end)
     |> Enum.into(%{})
   end
+
+  def bearstamp_to_timex(ts) when is_float(ts) do
+    bearstamp_to_timex(trunc(ts))
+  end
+  def bearstamp_to_timex(ts) when is_integer(ts) do
+    Timex.add(
+      Timex.DateTime.new!(Timex.Date.new!(2001, 1, 1), Timex.Time.new!(0,0,0)),
+      Timex.Duration.from_seconds(ts)
+    )
+  end
 end
