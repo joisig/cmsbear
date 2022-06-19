@@ -30,23 +30,64 @@ defmodule Cmsbear.ReadBear do
     {:ok, conn} = open_db()
     {:ok, statement} = Sqlite3.prepare(conn, query)
     :ok = Sqlite3.bind(conn, statement, params)
-    results = db_results(conn, statement, [:text, :title, :uid], [])
+    results = db_results(conn, statement, [:text, :title, :uid, :creation_date, :modification_date], [])
     :ok = Sqlite3.release(conn, statement)
     results
   end
 
   def get_notes(query, params \\ []) do
     get_results(query, params)
+    |> Enum.map(&process_timestamps/1)
     |> Enum.map(&process_front_matter/1)
+  end
+
+  def fm_val_to_timestamp(fm, key) do
+    case Map.get(fm, key, nil) do
+      nil ->
+        fm
+      val ->
+        {ok, time} = Elixir.Timex.Parse.DateTime.Parser.parse(val, "{ISO:Extended:Z}")
+        Map.put(fm, key, time)
+    end
+  end
+
+  def fm_default_value(fm, key, default) do
+    case Map.get(fm, key, nil) do
+      nil ->
+        Map.put(fm, key, default)
+      _ ->
+        fm
+    end
+  end
+
+  def fm_date_human(%{"date" => date} = fm) do
+    {:ok, human_date} = Timex.format(date, "%Y-%m-%d", :strftime)
+    Map.put(fm, "human_date", human_date)
+  end
+
+  def fm_date_itemprop(%{"date" => date} = fm) do
+    {:ok, itemprop_date} = Timex.format(date, "%Y-%m-%dT%H:%M:%S+00:00", :strftime)
+    Map.put(fm, "itemprop_date", itemprop_date)
   end
 
   def process_front_matter(%{text: text} = note) do
     front_matter = get_note_front_matter(text)
+    |> fm_val_to_timestamp("date")
+    |> fm_default_value("date", note.modification_date)
+    |> fm_date_human()
+    |> fm_date_itemprop()
+
+    # Title is handled specially, as we want to modify the note.title to match the front matter
+    # title if set, otherwise use the note.title as the default title in front matter.
     override_note = case Map.get(front_matter, "title", nil) do
       nil -> %{front_matter: Map.put(front_matter, "title", note.title), text: text_without_front_matter(text)}
       front_matter_title -> %{front_matter: front_matter, title: front_matter_title, text: text_without_front_matter(text)}
     end
     Map.merge(note, override_note)
+  end
+
+  def process_timestamps(%{modification_date: mod, creation_date: create} = note) do
+    %{note | modification_date: bearstamp_to_timex(mod), creation_date: bearstamp_to_timex(create)}
   end
 
   def text_without_front_matter(text) when is_binary(text) do
@@ -73,19 +114,19 @@ defmodule Cmsbear.ReadBear do
 
   def notes_by_title(title_components) do
     get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ztitle like ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ztitle like ?1",
       [make_like(title_components)])
   end
 
   def note_by_id(id) do
     get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZUNIQUEIDENTIFIER = ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZUNIQUEIDENTIFIER = ?1",
       [id])
   end
 
   def notes_by_content(content_string) do
     get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
       ["%#{content_string}%"])
   end
 
@@ -103,7 +144,7 @@ defmodule Cmsbear.ReadBear do
 
   def canonical_slug_notes() do
     get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
       ["%canonical_slug:%"])
     |> Enum.filter(fn item -> get_canonical_slug(item) != nil end)
     |> Enum.map(fn %{front_matter: %{"canonical_slug" => slug}} = item -> {slug, item} end)
@@ -112,7 +153,7 @@ defmodule Cmsbear.ReadBear do
 
   def static_files(of_type) do
     results = get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
       ["%#cmsbear/#{of_type}%"])
     Enum.map(results, fn obj -> parse_static_file_note(of_type, obj.text) end)
     |> Enum.flat_map(fn

@@ -1,12 +1,12 @@
 defmodule Cmsbear.Render do
 
   def get_includes_used(text) do
-    Regex.scan(~r/{{\s*include\s+(?<include_name>[a-zA-Z0-9_-\.]+)\s*}}/, text)
+    Regex.scan(~r/{{\s*include\s+(?<include_name>[a-zA-Z0-9-_\.]+)\s*}}/, text)
     |> Enum.map(&(&1 |> Enum.at(1)))
   end
 
   def get_variables_used(text) do
-    Regex.scan(~r/{{\s*var\s+(?<var_name>[a-zA-Z0-9_-]+)\s*}}/, text)
+    Regex.scan(~r/{{\s*var\s+(?<var_name>[a-zA-Z0-9-_]+)\s*}}/, text)
     |> Enum.map(&(&1 |> Enum.at(1)))
   end
 
