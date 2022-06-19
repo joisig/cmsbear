@@ -1,17 +1,17 @@
 defmodule Cmsbear.Render do
 
   def get_includes_used(text) do
-    Regex.scan(~r/{{\s*include\s+(?<include_name>[a-zA-Z0-9\.]+)\s*}}/, text)
+    Regex.scan(~r/{{\s*include\s+(?<include_name>[a-zA-Z0-9_-\.]+)\s*}}/, text)
     |> Enum.map(&(&1 |> Enum.at(1)))
   end
 
   def get_variables_used(text) do
-    Regex.scan(~r/{{\s*var\s+(?<var_name>[a-zA-Z0-9]+)\s*}}/, text)
+    Regex.scan(~r/{{\s*var\s+(?<var_name>[a-zA-Z0-9_-]+)\s*}}/, text)
     |> Enum.map(&(&1 |> Enum.at(1)))
   end
 
   def strip_layout_from_comment(text) do
-    case Regex.named_captures(~r/(?<all>\<!--\s*layout:?\s+(?<layout>[a-zA-Z0-9]+)\s*--\>)/, text) do
+    case Regex.named_captures(~r/(?<all>\<!--\s*layout:?\s+(?<layout>[a-zA-Z0-9_-]+)\s*--\>)/, text) do
       nil ->
         {:blank, text}
       %{"layout" => layout, "all" => text_to_strip} = captures ->
@@ -31,7 +31,7 @@ defmodule Cmsbear.Render do
 
   def render(text, context, layouts, includes) when is_binary(text) and is_map(context) and is_map(layouts) and is_map(includes) do
     with_includes = Enum.reduce(get_includes_used(text), text, fn include_name, acc ->
-      include_text = render(includes[include_name].body, %{"layout" => :blank}, %{}, includes)
+      include_text = render(includes[include_name].body, Map.put(context, "layout", :blank), %{}, includes)
       String.replace(acc, ~r/{{\s*include\s+#{include_name}\s*}}/, include_text, [:global])
     end)
 

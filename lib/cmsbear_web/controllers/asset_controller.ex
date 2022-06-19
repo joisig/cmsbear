@@ -13,7 +13,7 @@ defmodule CmsbearWeb.AssetController do
   end
 
   def upsert_db(conn, %{"upload" => %Plug.Upload{path: tmp_path}}) do
-    # TODO this is really naive for now. Probably want to keep some
+    # This is really naive for now. Probably want to keep some
     # older versions and atomically switch new queries to use the latest
     # version of the DB file while the older queries get to complete
     # on older files... or do something smarter.

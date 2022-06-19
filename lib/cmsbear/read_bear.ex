@@ -68,7 +68,7 @@ defmodule Cmsbear.ReadBear do
         %{"key" => key, "val" => val} -> [{key, val}]
       end
     end)
-    |> Enum.into(%{"layout" => "default", "language" => "en", "site_title" => "joisig gone awol"})
+    |> Enum.into(%{"layout" => "default", "language" => "en", "site_title" => "joisig gone awol", "author" => "joisig"})
   end
 
   def notes_by_title(title_components) do

@@ -42,7 +42,7 @@ defmodule CmsbearWeb.PageController do
     case Auth.can_access_content?(conn, [note.text]) do
       true ->
         html = Markup.note_to_html(note.text)
-        # TODO caching of these...
+        # TODO caching of these?
         layouts = ReadBear.static_files("layout")
         includes = ReadBear.static_files("include")
         with_layout = Cmsbear.Render.render(html, note.front_matter, layouts, includes)
@@ -104,4 +104,8 @@ defmodule CmsbearWeb.PageController do
   # TODO RSS feed
 
   # TODO add the concept of an account (i.e. one for each Bear database uploader)
+
+  # TODO date_to_xmlschema (see post layout in Bear)
+
+  # TODO page.url | relative_url in post layout footer
 end
