@@ -81,8 +81,8 @@ defmodule Cmsbear.ReadBear do
     # Title is handled specially, as we want to modify the note.title to match the front matter
     # title if set, otherwise use the note.title as the default title in front matter.
     override_note = case Map.get(front_matter, "title", nil) do
-      nil -> %{front_matter: Map.put(front_matter, "title", note.title), text: text_without_front_matter(text)}
-      front_matter_title -> %{front_matter: front_matter, title: front_matter_title, text: text_without_front_matter(text)}
+      nil -> %{front_matter: Map.put(front_matter, "title", note.title), text: text_without_front_matter_or_title(text)}
+      front_matter_title -> %{front_matter: front_matter, title: front_matter_title, text: text_without_front_matter_or_title(text)}
     end
     Map.merge(note, override_note)
   end
@@ -94,6 +94,20 @@ defmodule Cmsbear.ReadBear do
   def text_without_front_matter(text) when is_binary(text) do
     Regex.split(~r/```\n?FRONTMATTER\n(?<frontmatter>.*?)```/s, text)
     |> Enum.join("\n")
+  end
+
+  def text_without_title(text) when is_binary(text) do
+    lines = case String.split(text, "\n") do
+      ["# " <> _title_text|rest] -> rest
+      all -> all
+    end
+    |> Enum.join("\n")
+  end
+
+  def text_without_front_matter_or_title(text) when is_binary(text) do
+    text
+    |> text_without_front_matter()
+    |> text_without_title()
   end
 
   def get_note_front_matter(text) when is_binary(text) do

@@ -64,8 +64,13 @@ defmodule Cmsbear.Markup do
     note = note
     |> replace_image_links()
     |> replace_file_links()
+    |> without_tags()
     {:ok, html, _} = Earmark.as_html(note)
     html
+  end
+
+  def without_tags(note) do
+    Regex.replace(~r/\#[a-z0-9-_\/]+/, note, "")
   end
 
   def tags(note) do
