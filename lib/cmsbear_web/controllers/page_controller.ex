@@ -52,6 +52,10 @@ defmodule CmsbearWeb.PageController do
     end
   end
 
+  def by_slug(conn, %{"slug1" => slug1, "slug2" => slug2, "slug3" => slug3, "slug4" => slug4, "slug5" => slug5, "slug6" => slug6, "slug7" => slug7, "slug8" => slug8}) do
+    path = "/#{slug1}/#{slug2}/#{slug3}/#{slug4}/#{slug5}/#{slug6}/#{slug7}/#{slug8}"
+    serve_result_of_get_canonical_or_static(conn, get_canonical_or_static(path))
+  end
   def by_slug(conn, %{"slug1" => slug1, "slug2" => slug2, "slug3" => slug3, "slug4" => slug4, "slug5" => slug5, "slug6" => slug6, "slug7" => slug7}) do
     path = "/#{slug1}/#{slug2}/#{slug3}/#{slug4}/#{slug5}/#{slug6}/#{slug7}"
     serve_result_of_get_canonical_or_static(conn, get_canonical_or_static(path))

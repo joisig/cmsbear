@@ -92,7 +92,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def text_without_front_matter(text) when is_binary(text) do
-    Regex.split(~r/```\n?FRONTMATTER\n(?<frontmatter>.*?)```/s, text)
+    Regex.split(~r/```\n?cmsbear-frontmatter\n(?<frontmatter>.*?)```/s, text)
     |> Enum.join("\n")
   end
 
@@ -111,7 +111,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def get_note_front_matter(text) when is_binary(text) do
-    Markup.get_kv_section(text, "FRONTMATTER|cmsbear-frontmatter")
+    Markup.get_kv_section(text, "cmsbear-frontmatter")
     |> Enum.into(%{"layout" => "default", "language" => "en", "site_title" => "joisig gone awol", "author" => "joisig"})
   end
 

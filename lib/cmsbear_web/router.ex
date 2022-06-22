@@ -57,5 +57,6 @@ defmodule CmsbearWeb.Router do
     get "/:slug1/:slug2/:slug3/:slug4/:slug5", PageController, :by_slug
     get "/:slug1/:slug2/:slug3/:slug4/:slug5/:slug6", PageController, :by_slug
     get "/:slug1/:slug2/:slug3/:slug4/:slug5/:slug6/:slug7", PageController, :by_slug
+    get "/:slug1/:slug2/:slug3/:slug4/:slug5/:slug6/:slug7/:slug8", PageController, :by_slug
   end
 end
