@@ -1,5 +1,6 @@
 defmodule Cmsbear.ReadBear do
   alias Exqlite.Sqlite3;
+  alias Cmsbear.Markup
 
   def path2like(path) do
     String.split(path, "_") |> make_like()
@@ -96,19 +97,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def get_note_front_matter(text) when is_binary(text) do
-    front_matter = case Regex.named_captures(~r/^.*?```\n?FRONTMATTER\n(?<frontmatter>.*?)```.*?$/s, text) do
-      nil ->
-        []
-      %{"frontmatter" => lines} ->
-        String.split(lines, "\n")
-    end
-    |> Enum.flat_map(fn line ->
-      case Regex.named_captures(~r/\s*(?<key>[a-zA-Z0-9_]+):\s*(?<val>.*)/, line) do
-        nil ->
-          []
-        %{"key" => key, "val" => val} -> [{key, val}]
-      end
-    end)
+    Markup.get_kv_section(text, "FRONTMATTER|cmsbear-frontmatter")
     |> Enum.into(%{"layout" => "default", "language" => "en", "site_title" => "joisig gone awol", "author" => "joisig"})
   end
 
