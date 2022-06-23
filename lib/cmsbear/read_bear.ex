@@ -1,4 +1,8 @@
 defmodule Cmsbear.ReadBear do
+  @doc """
+  Never write to the database - only read!
+  """
+
   alias Exqlite.Sqlite3;
   alias Cmsbear.Markup
 
@@ -12,9 +16,17 @@ defmodule Cmsbear.ReadBear do
     Enum.join(parts, "")
   end
 
+  def get_db_path() do
+    case Application.get_env(:cmsbear, :local_bear_database_path) do
+      nil ->
+        Application.get_env(:cmsbear, :file_root) <> "/bear.sqlite"
+      path ->
+        path
+    end
+  end
+
   def open_db() do
-    Application.get_env(:cmsbear, :file_root) <> "/bear.sqlite"
-    |> Sqlite3.open()
+    get_db_path() |> Sqlite3.open()
   end
 
   def db_results(conn, statement, headings, acc) do

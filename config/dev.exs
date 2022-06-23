@@ -8,6 +8,14 @@ config :cmsbear, Cmsbear.Repo,
 
 
 config :cmsbear,
+  # Uncomment to directly read the original Bear database. This also
+  # disables upload since we wouldn't want to overwrite it.
+  local_bear_database_path: Path.expand("~/Library/Group Containers/9K33E3U3T4.net.shinyfrog.bear/Application Data/database.sqlite"),
+  # Uncomment to use local files directly (via symlinks named bimg and bfile in
+  # a subdirectory of file_root named symlinks).
+  # This also disables uploads (will cause a crash) so we don't overwrite original files.
+  use_local_bimg_and_bfile: true,
+  # This is the normal config for uploads
   file_root: "/Users/joi/projects/cmsbearfileroot"
 
 # For development, we disable any cache and enable

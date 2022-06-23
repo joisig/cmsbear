@@ -1,7 +1,13 @@
 defmodule CmsbearWeb.AssetController do
   use CmsbearWeb, :controller
 
+  def crash_if_local_db_or_local_symlinks() do
+    nil = Application.get_env(:cmsbear, :local_bear_database_path)
+    nil = String.contains?(String.Application.get_env(:cmsbear, :file_root, ""), "symlinks")
+  end
+
   def hashes(conn, _params) do
+    crash_if_local_db_or_local_symlinks()
     json(
       conn,
       %{
@@ -13,6 +19,8 @@ defmodule CmsbearWeb.AssetController do
   end
 
   def upsert_db(conn, %{"upload" => %Plug.Upload{path: tmp_path}}) do
+    crash_if_local_db_or_local_symlinks()
+
     # This is really naive for now. Probably want to keep some
     # older versions and atomically switch new queries to use the latest
     # version of the DB file while the older queries get to complete
@@ -34,9 +42,10 @@ defmodule CmsbearWeb.AssetController do
   end
 
   def upsert(conn, prefix, guid, filename, %Plug.Upload{path: tmp_path}) do
+    crash_if_local_db_or_local_symlinks()
     dest_folder = Path.join([root_path(prefix)], guid)
     File.mkdir_p(dest_folder)  # Ignore error, as it may already exist
-    dest_path = Path.join([dest_folder, filename])
+    dest_path = Path.join([dest_folder, filename <> ".bak"])
     case File.cp(tmp_path, dest_path) do
       :ok ->
         conn |> resp(201, "")

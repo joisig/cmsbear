@@ -61,14 +61,13 @@ defmodule Cmsbear.Markup do
   end
 
   def note_to_html(note) do
-    # TODO replace replace_xyz hacks with ast traversals
     note = note
-    |> replace_image_links()
-    |> replace_file_links()
     |> without_tags()
     {:ok, ast, _} = EarmarkParser.as_ast(note)
     ast
+    |> IO.inspect()
     |> process_ast()
+    |> IO.inspect()
     |> Earmark.Transform.transform()
   end
 
@@ -87,28 +86,36 @@ defmodule Cmsbear.Markup do
     Enum.map(items, fn item -> process_ast_item(item) end)
   end
 
-  def process_ast_item(item) when is_binary(item) do
-    re_italic_parts = ~r/\/([[:graph:]].*?[[:graph:]])\//
-    italic_parts = Regex.scan(re_italic_parts, item)
-    |> Enum.map(fn [_, content] ->
-      {"em", [], [content], %{}}
-    end)
-    other_parts = Regex.split(re_italic_parts, item)
-    case Regex.scan(re_italic_parts, item, return: :index) do
+  def process_ast_item_splitting_regex(item, regex, map_captures_fn)
+  when is_binary(item) and is_function(map_captures_fn) do
+    interest_parts = Regex.scan(regex, item)
+    |> Enum.map(map_captures_fn)
+    other_parts = Regex.split(regex, item)
+    case Regex.scan(regex, item, return: :index) do
       [[{0, _}|_rest]|_rest2] ->
-        zigzag_lists(italic_parts, other_parts)
+        zigzag_lists(interest_parts, other_parts)
       [_|_] ->
-        zigzag_lists(other_parts, italic_parts)
+        zigzag_lists(other_parts, interest_parts)
       _ ->
         item
     end
+  end
+
+  def process_ast_item(item) when is_binary(item) do
+    process_ast_item_splitting_regex(
+      item,
+      ~r/\/([[:graph:]].*?[[:graph:]]|[[:graph:]])\//,
+      fn [_, content] ->
+        {"em", [], [content], %{}}
+      end
+    )
   end
   def process_ast_item({"em", attribs, items, annotations}) do
     process_ast_item({"strong", attribs, items, annotations})
   end
   def process_ast_item({type, attribs, items, annotations})
   when is_binary(type) and is_list(attribs) and is_list(items) and is_map(annotations) do
-    {type, attribs, process_ast(items), annotations}
+    {type, attribs, List.flatten(process_ast(items)), annotations}
   end
 
   def zigzag_lists(first, second, acc \\ [])
