@@ -6,7 +6,7 @@ defmodule CmsbearWeb.PageController do
   alias CmsbearWeb.Auth
 
   def index(conn, _params) do
-    render(conn, "index.html")
+    by_slug(conn, %{"slug" => ""})
   end
 
   def get_canonical_or_static(path) when is_binary(path) do
@@ -42,10 +42,7 @@ defmodule CmsbearWeb.PageController do
     case Auth.can_access_content?(conn, [note.text]) do
       true ->
         html = Markup.note_to_html(note.text)
-        # TODO caching of these?
-        layouts = ReadBear.static_files("layout")
-        includes = ReadBear.static_files("include")
-        with_layout = Cmsbear.Render.render(html, note.front_matter, layouts, includes)
+        with_layout = Cmsbear.Render.load_files_and_render(html, note.front_matter)
         conn |> html(with_layout)
       _ ->
         conn |> resp(404, "")
@@ -121,8 +118,6 @@ defmodule CmsbearWeb.PageController do
 
   # TODO extract tags and show separately (e.g. in sidebar)
 
-  # TODO make it look pretty
-
   # TODO RSS feed
 
   # TODO add the concept of an account (i.e. one for each Bear database uploader)
@@ -131,5 +126,13 @@ defmodule CmsbearWeb.PageController do
 
   # TODO page.url | relative_url in post layout footer
 
-  # TODO see TODOs in 'head' include (in Bear)
+  # TODO see application/ld+json on / page
+
+  # TODO TODOcanonical in head include
+
+  # TODO TODOog:url in head include
+
+  # TODO in footer in Bear
+
+
 end

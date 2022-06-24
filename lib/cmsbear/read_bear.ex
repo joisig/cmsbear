@@ -52,6 +52,7 @@ defmodule Cmsbear.ReadBear do
     get_results(query, params)
     |> Enum.map(&process_timestamps/1)
     |> Enum.map(&process_front_matter/1)
+    |> order_notes_by_main_date()
   end
 
   def fm_val_to_timestamp(fm, key) do
@@ -73,24 +74,33 @@ defmodule Cmsbear.ReadBear do
     end
   end
 
-  def fm_date_human(%{"date" => date} = fm) do
+  def fm_date_human(%{"date" => date, "modification_date" => modification_date} = fm) do
     {:ok, human_date} = Timex.format(date, "%Y-%m-%d", :strftime)
-    Map.put(fm, "human_date", human_date)
+    {:ok, human_modification_date} = Timex.format(date, "%Y-%m-%d", :strftime)
+    fm
+    |> Map.put("human_date", human_date)
+    |> Map.put("human_modification_date", human_modification_date)
   end
 
-  def fm_date_itemprop(%{"date" => date} = fm) do
+  @spec fm_date_itemprop(map) :: map
+  def fm_date_itemprop(%{"date" => date, "modification_date" => modification_date} = fm) do
     {:ok, itemprop_date} = Timex.format(date, "%Y-%m-%dT%H:%M:%S+00:00", :strftime)
-    Map.put(fm, "itemprop_date", itemprop_date)
+    {:ok, itemprop_modification_date} = Timex.format(modification_date, "%Y-%m-%dT%H:%M:%S+00:00", :strftime)
+    fm
+    |> Map.put("itemprop_date", itemprop_date)
+    |> Map.put("itemprop_modification_date", itemprop_modification_date)
   end
 
   def strip_title_for_layout?(layout) do
-    layout in ["post", "page"]  # TODO
+    layout in ["post", "page", "home", "home_item"]  # TODO
   end
 
   def process_front_matter(%{text: text} = note) do
     front_matter = get_note_front_matter(text)
     |> fm_val_to_timestamp("date")
+    |> fm_default_value("description", "")
     |> fm_default_value("date", note.modification_date)
+    |> fm_default_value("modification_date", note.modification_date)
     |> fm_date_human()
     |> fm_date_itemprop()
 
@@ -142,8 +152,14 @@ defmodule Cmsbear.ReadBear do
   end
 
   def get_note_front_matter(text) when is_binary(text) do
+    # TODO - site title, language, author from config
     get_kv_section(text, "cmsbear-frontmatter")
-    |> Enum.into(%{"layout" => "default", "language" => "en", "site_title" => "joisig gone awol", "author" => "joisig"})
+    |> Enum.into(%{
+      "layout" => "default",
+      "language" => "en",
+      "site_title" => "joisig gone awol",
+      "site_description" => "Jói Sigurdsson's post-employment adventures",
+      "author" => "joisig"})
   end
 
   def notes_by_title(title_components) do
@@ -174,6 +190,12 @@ defmodule Cmsbear.ReadBear do
 
   def get_canonical_slug(note) when is_map(note) do
     Map.get(note.front_matter, "canonical_slug", nil)
+  end
+
+  def order_notes_by_main_date(notes) do
+    Enum.sort(notes, fn (left, right) ->
+      Timex.compare(Map.get(left.front_matter, "date"), Map.get(right.front_matter, "date")) >= 0
+    end)
   end
 
   def canonical_slug_notes() do
