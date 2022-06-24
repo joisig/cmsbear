@@ -49,7 +49,7 @@ defmodule Cmsbear.MixProject do
       {:jason, "~> 1.2"},
       {:plug_cowboy, "~> 2.5"},
       {:uuid, "~> 1.1"},
-
+      {:yaml_elixir, "~> 2.9"},
       {:timex, "~> 3.7"},
       {:earmark, "~> 1.4"},
       {:openid_connect, git: "https://github.com/CrankWheel/openid_connect", ref: "0d63a3c27d85cae2de93d67d3bc77adcf5d6110a"}

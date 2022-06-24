@@ -2,26 +2,14 @@ defmodule Cmsbear.Markup do
 
   @default_image_opts %{"attrib-max-width" => "100%"}
 
-  def kv_lines_to_map(kv_lines) do
-    Enum.flat_map(kv_lines, fn line ->
-      case Regex.named_captures(~r/\s*(?<key>[a-zA-Z0-9-_]+):\s*(?<val>.*)/, line) do
-        nil ->
-          []
-        %{"key" => key, "val" => val} ->
-          [{key, val}]
-      end
-    end)
-    |> Enum.into(%{})
-  end
-
   def get_kv_section(text, section_id) do
-    front_matter = case Regex.named_captures(~r/^.*?```\n?(#{section_id})\n(?<lines>.*?)```.*?$/s, text) do
+    case Regex.named_captures(~r/^.*?```\n?(#{section_id})\n(?<lines>.*?)```.*?$/s, text) do
       nil ->
-        []
+        ""
       %{"lines" => lines} ->
-        String.split(lines, "\n")
+        lines
     end
-    |> kv_lines_to_map()
+    |> YamlElixir.read_from_string!()
   end
 
   def fixup_image_markup_impl(path, metadata_section \\ "") do
@@ -108,7 +96,7 @@ defmodule Cmsbear.Markup do
     walk_and_modify_ast(ast, %{}, fn (item, acc) ->
       case item do
         {"pre", [], [{"code", [{"class", "cmsbear-metadata-" <> metadata_id}], [metadata_text], %{}}], %{}} ->
-          metadata = kv_lines_to_map(String.split(metadata_text, "\n"))
+          metadata = YamlElixir.read_from_string!(metadata_text)
           {[], Map.put(acc, metadata_id, metadata)}
         text ->
           {text, acc}
