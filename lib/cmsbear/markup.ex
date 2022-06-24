@@ -95,7 +95,7 @@ defmodule Cmsbear.Markup do
   end
 
   def process_ast_item(item) when is_binary(item) do
-    process_ast_item_splitting_regex(
+    text_to_ast_list_splitting_regex(
       item,
       ~r/\/([[:graph:]].*?[[:graph:]]|[[:graph:]])\//,
       fn [_, content] ->
@@ -103,6 +103,7 @@ defmodule Cmsbear.Markup do
       end
     )
   end
+
   def process_ast_item({"em", attribs, items, annotations}) do
     process_ast_item({"strong", attribs, items, annotations})
   end
@@ -111,7 +112,44 @@ defmodule Cmsbear.Markup do
     {type, attribs, List.flatten(process_ast(items)), annotations}
   end
 
-  def process_ast_item_splitting_regex(item, regex, map_captures_fn)
+  @doc """
+  Walks an AST and allows you to process it (storing details in acc) and/or
+  modify it as it is walked.
+
+  The process_item_fn function is required. It takes two parameters, the
+  single item to process (which will either be a string or a 4-tuple) and
+  the accumulator, and returns a tuple {processed_item, updated_acc}.
+
+  The process_list_fn function is optional and defaults to no modification of
+  items or accumulator. It takes two parameters, the list of items that
+  are the sub-items of a given element in the AST (or the top-level list of
+  items), and the accumulator, and returns a tuple
+  {processed_items_list, updated_acc}.
+
+  This function ends up returning {ast, acc}.
+  """
+  def walk_and_modify_ast(items, acc, process_item_fn, process_list_fn \\ &({&1, &2}))
+  when is_list(items) and is_function(process_item_fn) and is_function(process_list_fn)
+  do
+    {items, acc} = process_list_fn.(items, acc)
+    Enum.map_reduce(items, acc, fn (item, acc) ->
+      {_item, _acc} = walk_and_modify_ast_item(item, acc, process_item_fn, process_list_fn)
+    end)
+  end
+
+  def walk_and_modify_ast_item(item, acc, process_item_fn, process_list_fn)
+  when is_function(process_item_fn) and is_function(process_list_fn) do
+    case process_item_fn.(item, acc) do
+      {{type, attribs, items, annotations}, acc}
+      when is_binary(type) and is_list(attribs) and is_list(items) and is_map(annotations) ->
+        {items, acc} = walk_and_modify_ast(items, acc, process_item_fn, process_list_fn)
+        {{type, attribs, List.flatten(items), annotations}, acc}
+      {item_or_items, acc} when is_binary(item_or_items) or is_list(item_or_items) ->
+        {item_or_items, acc}
+    end
+  end
+
+  def text_to_ast_list_splitting_regex(item, regex, map_captures_fn)
   when is_binary(item) and is_function(map_captures_fn) do
     interest_parts = Regex.scan(regex, item)
     |> Enum.map(map_captures_fn)
