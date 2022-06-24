@@ -174,10 +174,18 @@ defmodule Cmsbear.ReadBear do
       [id])
   end
 
-  def notes_by_content(content_string) do
-    get_notes(
+  def notes_by_content(content_string, exclude_frontmatter_matches \\ true) do
+    notes = get_notes(
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
       ["%#{content_string}%"])
+    case exclude_frontmatter_matches do
+      true ->
+        Enum.filter(notes, fn (note) ->
+          String.contains?(note.text, content_string)
+        end)
+      _ ->
+        notes
+    end
   end
 
   def special_files() do
