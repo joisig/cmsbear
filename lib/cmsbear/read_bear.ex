@@ -131,8 +131,18 @@ defmodule Cmsbear.ReadBear do
     |> text_without_title()
   end
 
+  def get_kv_section(text, section_id) do
+    case Regex.named_captures(~r/^.*?```\n?(#{section_id})\n(?<lines>.*?)```.*?$/s, text) do
+      nil ->
+        ""
+      %{"lines" => lines} ->
+        lines
+    end
+    |> YamlElixir.read_from_string!()
+  end
+
   def get_note_front_matter(text) when is_binary(text) do
-    Markup.get_kv_section(text, "cmsbear-frontmatter")
+    get_kv_section(text, "cmsbear-frontmatter")
     |> Enum.into(%{"layout" => "default", "language" => "en", "site_title" => "joisig gone awol", "author" => "joisig"})
   end
 

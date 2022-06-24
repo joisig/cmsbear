@@ -2,16 +2,6 @@ defmodule Cmsbear.Markup do
 
   @default_image_opts %{"attrib-max-width" => "100%"}
 
-  def get_kv_section(text, section_id) do
-    case Regex.named_captures(~r/^.*?```\n?(#{section_id})\n(?<lines>.*?)```.*?$/s, text) do
-      nil ->
-        ""
-      %{"lines" => lines} ->
-        lines
-    end
-    |> YamlElixir.read_from_string!()
-  end
-
   def fixup_image_markup_impl(path, metadata_section \\ "") do
     {title_part, metadata_section} = case metadata_section do
       "" ->
