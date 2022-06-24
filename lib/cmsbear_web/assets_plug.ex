@@ -5,8 +5,12 @@ defmodule CmsbearWeb.AssetsPlug do
   alias CmsbearWeb.Auth
 
   @impl true
-  def init([bear_root: _] = opts) do
-    opts
+  def init([bear_root: root] = opts) do
+    root = case Application.get_env(:cmsbear, :use_local_bimg_and_bfile, nil) do
+      true -> Path.join(root, "symlinks")
+      _ -> root
+    end
+    [bear_root: root]
   end
 
   @impl true

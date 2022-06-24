@@ -91,6 +91,8 @@ defmodule CmsbearWeb.PageController do
           true ->
             case ReadBear.get_canonical_slug(note) do
               nil ->
+                # TODO this isn't reliable, needs fixing. Try for example /pdf_download
+                # for one that's broken, but /covid_antigen is OK.
                 case make_full_slug(note.title) do
                   "/" <> ^slug ->
                     serve_note(conn, note)

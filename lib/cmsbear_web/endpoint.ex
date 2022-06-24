@@ -55,7 +55,7 @@ defmodule CmsbearWeb.Endpoint do
   # the browser pipeline in the router. But fine for now.
   plug :fetch_session
   plug CmsbearWeb.AssetsPlug,
-    bear_root: Application.get_env(:cmsbear, :file_root) <> if Application.get_env(:cmsbear, :use_local_bimg_and_bfile, false), do: "/symlinks", else: ""
+    bear_root: Application.get_env(:cmsbear, :file_root)
 
   plug CmsbearWeb.Router
 end
