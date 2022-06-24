@@ -83,6 +83,10 @@ defmodule Cmsbear.ReadBear do
     Map.put(fm, "itemprop_date", itemprop_date)
   end
 
+  def strip_title_for_layout?(layout) do
+    layout in ["post", "page"]  # TODO
+  end
+
   def process_front_matter(%{text: text} = note) do
     front_matter = get_note_front_matter(text)
     |> fm_val_to_timestamp("date")
@@ -90,11 +94,16 @@ defmodule Cmsbear.ReadBear do
     |> fm_date_human()
     |> fm_date_itemprop()
 
+    text = case strip_title_for_layout?(Map.get(front_matter, "layout", "default")) do
+      true -> text_without_front_matter_or_title(text)
+      _ -> text_without_front_matter(text)
+    end
+
     # Title is handled specially, as we want to modify the note.title to match the front matter
     # title if set, otherwise use the note.title as the default title in front matter.
     override_note = case Map.get(front_matter, "title", nil) do
-      nil -> %{front_matter: Map.put(front_matter, "title", note.title), text: text_without_front_matter_or_title(text)}
-      front_matter_title -> %{front_matter: front_matter, title: front_matter_title, text: text_without_front_matter_or_title(text)}
+      nil -> %{front_matter: Map.put(front_matter, "title", note.title), text: text}
+      front_matter_title -> %{front_matter: front_matter, title: front_matter_title, text: text}
     end
     Map.merge(note, override_note)
   end

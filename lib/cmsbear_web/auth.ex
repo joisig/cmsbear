@@ -8,8 +8,16 @@ defmodule CmsbearWeb.Auth do
     |> Conn.put_session(:logged_in_email, email)
   end
 
+  def get_owner_email() do
+    "joi@quarter.is"  # TODO
+  end
+
+  def get_public_tags() do
+    ["#recipe"]  # TODO
+  end
+
   def is_logged_in_as_owner?(conn) do
-    was_owner = Conn.get_session(conn, :logged_in_email) == Application.get_env(:cmsbear, :owner_email)
+    was_owner = Conn.get_session(conn, :logged_in_email) == get_owner_email()
     now = Timex.now()
     login_time = case Conn.get_session(conn, :login_time) do
       nil -> Timex.subtract(now, Timex.Duration.from_days(10 * 365))
@@ -19,13 +27,20 @@ defmodule CmsbearWeb.Auth do
     was_owner and not_too_old
   end
 
+  def is_public(note_text) when is_binary(note_text), do: is_public([note_text])
+  def is_public(note_texts) when is_list(note_texts) do
+    public_tags = get_public_tags()
+    [] != Enum.filter(note_texts, fn text ->
+      0 != MapSet.size(MapSet.intersection(MapSet.new(public_tags), MapSet.new(Markup.tags(text))))
+    end)
+  end
+
   def can_access_content?(conn, note_texts) when is_list(note_texts) do
     case is_logged_in_as_owner?(conn) do
       true ->
         true
       false ->
-        public_tag = Application.get_env(:cmsbear, :public_tag)
-        [] != Enum.filter(note_texts, &(public_tag in Markup.tags(&1)))
+        is_public(note_texts)
     end
   end
 
