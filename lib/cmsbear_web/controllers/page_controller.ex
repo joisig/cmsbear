@@ -130,4 +130,6 @@ defmodule CmsbearWeb.PageController do
   # TODO date_to_xmlschema (see post layout in Bear)
 
   # TODO page.url | relative_url in post layout footer
+
+  # TODO see TODOs in 'head' include (in Bear)
 end
