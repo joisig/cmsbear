@@ -4,7 +4,6 @@ defmodule Cmsbear.ReadBear do
   """
 
   alias Exqlite.Sqlite3;
-  alias Cmsbear.Markup
 
   def path2like(path) do
     String.split(path, "_") |> make_like()
@@ -91,6 +90,29 @@ defmodule Cmsbear.ReadBear do
     |> Map.put("itemprop_modification_date", itemprop_modification_date)
   end
 
+  def fm_canonical_url(%{"site_base_url" => base} = fm) do
+    case Map.get(fm, "canonical_url", "") do
+      "" ->
+        case Map.get(fm, "canonical_slug", "") do
+          "" ->
+            fm
+          slug ->
+            Map.put(fm, "canonical_url", base <> slug)
+        end
+      _url ->
+        fm
+    end
+  end
+
+  def fm_canonical_link(fm) do
+    link = case Map.get(fm, "canonical_url", nil) do
+      nil ->
+        fm
+      url ->
+        Map.put(fm, "canonical_link", "<link rel='canonical' href='#{url}' />")
+    end
+  end
+
   def strip_title_for_layout?(layout) do
     layout in ["post", "page", "home", "home_item"]  # TODO
   end
@@ -103,6 +125,8 @@ defmodule Cmsbear.ReadBear do
     |> fm_default_value("modification_date", note.modification_date)
     |> fm_date_human()
     |> fm_date_itemprop()
+    |> fm_canonical_url()
+    |> fm_canonical_link()
 
     text = case strip_title_for_layout?(Map.get(front_matter, "layout", "default")) do
       true -> text_without_front_matter_or_title(text)
@@ -159,6 +183,7 @@ defmodule Cmsbear.ReadBear do
       "language" => "en",
       "site_title" => "joisig gone awol",
       "site_description" => "Jói Sigurdsson's post-employment adventures",
+      "site_base_url" => "https://joisig.com",
       "author" => "joisig"})
   end
 

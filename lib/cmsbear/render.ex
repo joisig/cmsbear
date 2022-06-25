@@ -35,7 +35,7 @@ defmodule Cmsbear.Render do
     # TODO caching of these?
     layouts = ReadBear.static_files("layout")
     includes = ReadBear.static_files("include")
-    with_layout = render(text, context, layouts, includes)
+    render(text, context, layouts, includes)
   end
 
   def render(text, context, layouts, includes)

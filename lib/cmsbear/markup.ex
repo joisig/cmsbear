@@ -217,14 +217,11 @@ defmodule Cmsbear.Markup do
     interest_parts = Regex.scan(regex, item)
     |> Enum.map(map_captures_fn)
     other_parts = Regex.split(regex, item)
-    case Regex.scan(regex, item, return: :index) do
-      [[{0, _}|_rest]|_rest2] ->
-        zigzag_lists(interest_parts, other_parts)
-      [_|_] ->
-        zigzag_lists(other_parts, interest_parts)
-      _ ->
-        item
-    end
+    # If the match is at the front of 'item', Regex.split will
+    # return an empty string "before" the split. Therefore
+    # the interest_parts always has either the same number of
+    # elements as the other_parts list, or one fewer.
+    zigzag_lists(other_parts, interest_parts)
   end
 
   def zigzag_lists(first, second, acc \\ [])
