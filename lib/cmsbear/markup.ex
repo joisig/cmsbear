@@ -169,8 +169,14 @@ defmodule Cmsbear.Markup do
             {image, acc}
           figcaption ->
             caption_id = UUID.uuid4()
+            figure_attributes = Enum.flat_map(metadata, fn
+              {"figure-attrib-" <> name, v} ->
+                [{name, v}]
+              _ ->
+                []
+              end)
             figure = {
-              "figure", [{"aria-describedby", caption_id}],
+              "figure", [{"aria-describedby", caption_id}|figure_attributes],
               [image, {"figcaption", [{"id", caption_id}], [figcaption], %{}}],
               %{}
             }
