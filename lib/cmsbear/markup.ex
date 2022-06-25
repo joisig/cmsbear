@@ -57,9 +57,10 @@ defmodule Cmsbear.Markup do
   # to it").
   def handle_italics(ast) do
     ast
-    |> walk_and_modify_ast(0, &handle_italics_impl/2)
+    |> walk_and_modify_ast("", &handle_italics_impl/2)
     |> elem(0)
   end
+  def handle_italics_impl(item, "a"), do: {item, ""}
   def handle_italics_impl(item, acc) when is_binary(item) do
     new_item = text_to_ast_list_splitting_regex(
       item,
@@ -70,7 +71,11 @@ defmodule Cmsbear.Markup do
     )
     {new_item, acc}
   end
-  def handle_italics_impl(item, acc), do: {item, acc}
+  def handle_italics_impl({name, _, _, _} = item, _acc) do
+    # Store the last seen element name so we can skip handling
+    # italics within <a> elements.
+    {item, name}
+  end
 
   def handle_bold(ast) do
     ast
