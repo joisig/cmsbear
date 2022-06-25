@@ -121,6 +121,9 @@ defmodule Cmsbear.Markup do
     attr |> notnil_add_fn.("title", title) |> notnil_add_fn.("alt", alt)
   end
 
+  def generate_image_attributes(%{"cmsbear-processed" => _} = attributes, _) do
+    attributes
+  end
   def generate_image_attributes(current_attributes, image_opts)
   when is_map(current_attributes) and is_map(image_opts) do
     # Title here is used to transmit the metadata section ID, and
@@ -142,6 +145,7 @@ defmodule Cmsbear.Markup do
         end
       end
     )
+    |> Enum.into(%{"cmsbear-processed" => "true"})
     |> Enum.into(current_attributes)
   end
 
@@ -166,7 +170,6 @@ defmodule Cmsbear.Markup do
               %{}
             }
             {figure, acc}
-    #    "<figure aria-describedby='#{id}'>#{image}<figcaption id='#{id}'>#{caption}</figcaption></figure>"
         end
     end
   end

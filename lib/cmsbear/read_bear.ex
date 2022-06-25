@@ -189,19 +189,19 @@ defmodule Cmsbear.ReadBear do
 
   def notes_by_title(title_components) do
     get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ztitle like ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ztrashed =0 and ztitle like ?1",
       [make_like(title_components)])
   end
 
   def note_by_id(id) do
     get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZUNIQUEIDENTIFIER = ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ztrashed =0 and ZUNIQUEIDENTIFIER = ?1",
       [id])
   end
 
   def notes_by_content(content_string, exclude_frontmatter_matches \\ true) do
     notes = get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ztrashed =0 and ZTEXT like ?1",
       ["%#{content_string}%"])
     case exclude_frontmatter_matches do
       true ->
@@ -231,18 +231,24 @@ defmodule Cmsbear.ReadBear do
     end)
   end
 
+  @spec permalink_notes :: none
   def permalink_notes() do
     get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ztrashed =0 and ZTEXT like ?1",
       ["%permalink:%"])
     |> Enum.filter(fn item -> get_permalink(item) != nil end)
     |> Enum.map(fn %{front_matter: %{"permalink" => slug}} = item -> {slug, item} end)
     |> Enum.into(%{})
   end
 
+  def get_permalink_note(path) do
+    notes = permalink_notes()
+    Map.get(notes, path, Map.get(notes, path <> "/", nil))
+  end
+
   def static_files(of_type) do
     results = get_notes(
-      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
+      "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ztrashed =0 and ZTEXT like ?1",
       ["%#cmsbear/#{of_type}%"])
     Enum.map(results, fn obj -> parse_static_file_note(of_type, obj.text) end)
     |> Enum.flat_map(fn

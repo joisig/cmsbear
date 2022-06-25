@@ -10,8 +10,7 @@ defmodule CmsbearWeb.PageController do
   end
 
   def get_canonical_or_static(path) when is_binary(path) do
-    String.trim_trailing(path, "/")
-    case ReadBear.permalink_notes()[path] do
+    case ReadBear.get_permalink_note(path) do
       nil ->
         case ReadBear.static_files("staticfile")[path] do
           nil ->
