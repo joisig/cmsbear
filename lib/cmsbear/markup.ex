@@ -175,9 +175,10 @@ defmodule Cmsbear.Markup do
               _ ->
                 []
               end)
+            {:ok, figcaption_ast, _} = EarmarkParser.as_ast(figcaption)
             figure = {
               "figure", [{"aria-describedby", caption_id}|figure_attributes],
-              [image, {"figcaption", [{"id", caption_id}], [figcaption], %{}}],
+              [image, {"figcaption", [{"id", caption_id}], figcaption_ast, %{}}],
               %{}
             }
             {figure, acc}
