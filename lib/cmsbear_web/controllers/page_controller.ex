@@ -127,11 +127,9 @@ defmodule CmsbearWeb.PageController do
 
   # TODO see application/ld+json on / page
 
-  # TODO TODOcanonical in head include
-
   # TODO TODOog:url in head include
 
   # TODO in footer in Bear
 
-
+  # TODO make off-site links target="_blank" by default
 end
