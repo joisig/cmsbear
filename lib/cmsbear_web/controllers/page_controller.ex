@@ -11,7 +11,7 @@ defmodule CmsbearWeb.PageController do
 
   def get_canonical_or_static(path) when is_binary(path) do
     String.trim_trailing(path, "/")
-    case ReadBear.canonical_slug_notes()[path] do
+    case ReadBear.permalink_notes()[path] do
       nil ->
         case ReadBear.static_files("staticfile")[path] do
           nil ->
@@ -86,7 +86,7 @@ defmodule CmsbearWeb.PageController do
 
         case Auth.can_access_content?(conn, [note.text]) do
           true ->
-            case ReadBear.get_canonical_slug(note) do
+            case ReadBear.get_permalink(note) do
               nil ->
                 # TODO this isn't reliable, needs fixing. Try for example /pdf_download
                 # for one that's broken, but /covid_antigen is OK.

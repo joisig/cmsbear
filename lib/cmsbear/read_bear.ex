@@ -93,7 +93,7 @@ defmodule Cmsbear.ReadBear do
   def fm_canonical_url(%{"site_base_url" => base} = fm) do
     case Map.get(fm, "canonical_url", "") do
       "" ->
-        case Map.get(fm, "canonical_slug", "") do
+        case Map.get(fm, "permalink", "") do
           "" ->
             fm
           slug ->
@@ -221,8 +221,8 @@ defmodule Cmsbear.ReadBear do
     }
   end
 
-  def get_canonical_slug(note) when is_map(note) do
-    Map.get(note.front_matter, "canonical_slug", nil)
+  def get_permalink(note) when is_map(note) do
+    Map.get(note.front_matter, "permalink", nil)
   end
 
   def order_notes_by_main_date(notes) do
@@ -231,12 +231,12 @@ defmodule Cmsbear.ReadBear do
     end)
   end
 
-  def canonical_slug_notes() do
+  def permalink_notes() do
     get_notes(
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ZTEXT like ?1",
-      ["%canonical_slug:%"])
-    |> Enum.filter(fn item -> get_canonical_slug(item) != nil end)
-    |> Enum.map(fn %{front_matter: %{"canonical_slug" => slug}} = item -> {slug, item} end)
+      ["%permalink:%"])
+    |> Enum.filter(fn item -> get_permalink(item) != nil end)
+    |> Enum.map(fn %{front_matter: %{"permalink" => slug}} = item -> {slug, item} end)
     |> Enum.into(%{})
   end
 
