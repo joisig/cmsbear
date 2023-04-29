@@ -10,8 +10,11 @@ import Config
 # which you should run after static files are built and
 # before starting your production server.
 config :cmsbear, CmsbearWeb.Endpoint,
-  url: [host: "example.com", port: 80],
-  cache_static_manifest: "priv/static/cache_manifest.json"
+  # The release is designed to run behind Caddy so leaving
+  # it just localhost and port 4000 for now.
+  url: [host: "localhost", port: 4000],
+  cache_static_manifest: "priv/static/cache_manifest.json",
+  server: true
 
 # Do not print debug messages in production
 config :logger, level: :info

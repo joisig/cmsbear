@@ -59,7 +59,10 @@ def upload_missing_assets(p_and_h, hashes, type):
 def get_hashes_from_server():
   r = requests.get(URL + "/api/hashes", headers={'Authorization': 'Basic ' + API_KEY})
   print('Hashes request result is %d' % r.status_code)
-  return r.json()
+  if r.status_code == 200:
+    return r.json()
+  else:
+    return {'db': 0, 'files': {}, 'images': {}}
 
 
 def main():

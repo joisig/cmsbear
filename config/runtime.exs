@@ -41,6 +41,24 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  cmsbear_api_key =
+    System.get_env("CMSBEAR_API_KEY") ||
+      raise """
+      environment variable CMSBEAR_API_KEY is missing.
+      You can generate one by calling: mix phx.gen.secret
+      """
+
+  cmsbear_file_root =
+    System.get_env("CMSBEAR_FILE_ROOT") ||
+      raise """
+      environment variable CMSBEAR_FILE_ROOT is missing.
+      Value might be e.g. /Users/joi/projects/cmsbearfileroot
+      """
+
+  config :cmsbear,
+    api_key: cmsbear_api_key,
+    file_root: cmsbear_file_root
+
   # ## Using releases
   #
   # If you are doing OTP releases, you need to instruct Phoenix
