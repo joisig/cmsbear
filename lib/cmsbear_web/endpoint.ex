@@ -54,8 +54,7 @@ defmodule CmsbearWeb.Endpoint do
   # Could skip this here and do only when needed within this plug, then again in
   # the browser pipeline in the router. But fine for now.
   plug :fetch_session
-  plug CmsbearWeb.AssetsPlug,
-    bear_root: Application.get_env(:cmsbear, :file_root)
+  plug CmsbearWeb.AssetsPlug
 
   plug CmsbearWeb.Router
 end

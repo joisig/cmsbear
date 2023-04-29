@@ -5,16 +5,21 @@ defmodule CmsbearWeb.AssetsPlug do
   alias CmsbearWeb.Auth
 
   @impl true
-  def init([bear_root: root] = opts) do
-    root = case Application.get_env(:cmsbear, :use_local_bimg_and_bfile, nil) do
-      true -> Path.join(root, "symlinks")
-      _ -> root
-    end
-    [bear_root: root]
+  def init(_) do
+    :ok
   end
 
   @impl true
-  def call(conn, [bear_root: bear_root]) do
+  def call(conn, :ok) do
+    # We don't do this in init because then we can't take the file_root
+    # as an environment variable. Plug init values are done at compile
+    # time, not at runtime.
+    root = Application.get_env(:cmsbear, :file_root)
+    bear_root = case Application.get_env(:cmsbear, :use_local_bimg_and_bfile, nil) do
+      true -> Path.join(root, "symlinks")
+      _ -> root
+    end
+
     case conn.path_info do
       [_, "..", _] -> conn
       [_, _, ".."] -> conn
