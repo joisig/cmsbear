@@ -42,14 +42,19 @@ defmodule Cmsbear.Render do
   when is_binary(text) and is_map(context) and is_map(layouts) and is_map(includes) do
     rendered_doc = render_impl(text, context, layouts, includes)
     list_tag_re = ~r/{{\s*list_tag_with_layout\s*}}/
+    latest_modification_re = ~r/{{\s*latest_itemprop_modification_date\s*}}/
     case Regex.run(list_tag_re, rendered_doc) do
       nil ->
         rendered_doc
       _ ->
         # For now just crash if these keys are not set
         %{"list_tag" => list_tag, "list_tag_layout" => list_tag_layout} = context
-        list_text = render_list(list_tag, list_tag_layout, layouts, includes)
-        Regex.replace(list_tag_re, rendered_doc, list_text)
+        notes = Cmsbear.ReadBear.notes_by_content(list_tag)
+        [latest_modification_date|_] = notes |> Enum.map(&(&1.modification_date)) |> Enum.sort
+        list_text = render_list(notes, list_tag_layout, layouts, includes)
+        with_list = Regex.replace(list_tag_re, rendered_doc, list_text)
+        {:ok, latest_itemprop_modification_date} = Timex.format(latest_modification_date, "%Y-%m-%dT%H:%M:%S+00:00", :strftime)
+        with_latest_modification_date = Regex.replace(latest_modification_re, with_list, latest_itemprop_modification_date)
     end
   end
 
@@ -85,12 +90,12 @@ defmodule Cmsbear.Render do
     end
   end
 
-  def render_list(tag_name, layout, layouts, includes)
-  when is_binary(tag_name) and is_binary(layout) and is_map(layouts) and is_map(includes) do
-    notes = Cmsbear.ReadBear.notes_by_content(tag_name)
+  def render_list(notes, layout, layouts, includes)
+  when is_list(notes) and is_binary(layout) and is_map(layouts) and is_map(includes) do
     Enum.map(notes, fn note ->
       context = note.front_matter |> Map.put("layout", layout)
-      render_impl("", context, layouts, includes)
+      html = Cmsbear.Markup.note_to_html(note.text |> String.slice(0..2000))
+      render_impl(html, context, layouts, includes)
     end)
     |> Enum.join("\n")
   end

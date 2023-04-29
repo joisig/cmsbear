@@ -42,7 +42,13 @@ defmodule CmsbearWeb.PageController do
       true ->
         html = Markup.note_to_html(note.text)
         with_layout = Cmsbear.Render.load_files_and_render(html, note.front_matter)
-        conn |> html(with_layout)
+        case note.front_matter["layout"] do
+          "atomxml" ->
+            # Quick hack to get the right content type here...
+            conn |> put_resp_content_type("application/atom+xml") |> send_resp(200, with_layout)
+          _ ->
+            conn |> html(with_layout)
+        end
       _ ->
         conn |> resp(404, "")
     end
@@ -116,8 +122,6 @@ defmodule CmsbearWeb.PageController do
   # TODO add way to browse a particular tag
 
   # TODO extract tags and show separately (e.g. in sidebar)
-
-  # TODO RSS feed
 
   # TODO add the concept of an account (i.e. one for each Bear database uploader)
 

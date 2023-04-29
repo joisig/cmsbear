@@ -259,7 +259,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def parse_static_file_note(of_type, note) do
-    case Regex.named_captures(~r/^.*\#cmsbear\/#{of_type}\n.*?```\n?name:\s*(?<name>[^\n]+)\n.*?mime:(?<mime>[^\n]+)\n.*?====*\n(?<body>.*)```.*?$/s, note) do
+    case Regex.named_captures(~r/^.*\#cmsbear\/#{of_type}\n.*?```\n?name:\s*(?<name>[^\n]+)\n.*?mime:\s*(?<mime>[^\n]+)\n.*?====*\n(?<body>.*)```.*?$/s, note) do
       nil ->
         %{}
       map ->

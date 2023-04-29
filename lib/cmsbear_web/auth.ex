@@ -13,7 +13,7 @@ defmodule CmsbearWeb.Auth do
   end
 
   def get_public_tags() do
-    ["#recipe"]  # TODO
+    ["#cmsbear/page", "#cmsbear/post"]  # TODO
   end
 
   def is_logged_in_as_owner?(conn) do
