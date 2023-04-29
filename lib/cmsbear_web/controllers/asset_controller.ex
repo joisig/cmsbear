@@ -4,6 +4,7 @@ defmodule CmsbearWeb.AssetController do
   def crash_if_local_db_or_local_symlinks() do
     nil = Application.get_env(:cmsbear, :local_bear_database_path)
     false = String.contains?(Application.get_env(:cmsbear, :file_root, ""), "symlinks")
+    false = String.contains?(Application.get_env(:cmsbear, :file_root, ""), "net.shinyfrog.bear")
   end
 
   def hashes(conn, _params) do
