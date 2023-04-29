@@ -16,8 +16,15 @@ config :cmsbear, CmsbearWeb.Endpoint,
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true
 
-# Do not print debug messages in production
-config :logger, level: :info
+config :logger,
+  backends: [:console, {LoggerFileBackend, :file_log}]
+
+config :logger, :file_log,
+  path: "cmsbear.log",
+  level: :info,
+  rotate: %{ max_bytes: 104_857_600, keep: 10 },  # 10 most recent files at 100 Mb each
+  format: "[$date][$time][$level][$metadata] $message\n",
+  metadata: [:module, :line, :request_id]
 
 # ## SSL Support
 #

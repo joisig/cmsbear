@@ -27,6 +27,8 @@ erl_crash.dump
 # Ignore package tarball (built via "mix hex.build").
 cmsbear-*.tar
 
+cmsbear.log
+
 # Ignore assets that are produced by build tools.
 /priv/static/assets/
 
