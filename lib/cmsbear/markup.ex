@@ -1,6 +1,6 @@
 defmodule Cmsbear.Markup do
 
-  @default_image_opts %{"attrib-max-width" => "100%"}
+  @default_image_opts %{"attrib-style" => "max-width: 100%;"}
 
   def fixup_image_markup_impl(path, metadata_section \\ "") do
     {title_part, metadata_section} = case metadata_section do
