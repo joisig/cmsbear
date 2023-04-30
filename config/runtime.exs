@@ -55,9 +55,38 @@ if config_env() == :prod do
       Value might be e.g. /Users/joi/projects/cmsbearfileroot
       """
 
+  cmsbear_client_id =
+    System.get_env("CMSBEAR_OIDC_GOOGLE_CLIENT_ID") ||
+      raise """
+      environment variable CMSBEAR_OIDC_GOOGLE_CLIENT_ID is missing.
+      """
+
+  cmsbear_client_secret =
+    System.get_env("CMSBEAR_OIDC_GOOGLE_CLIENT_SECRET") ||
+      raise """
+      environment variable CMSBEAR_OIDC_GOOGLE_CLIENT_SECRET is missing.
+      """
+
+  cmsbear_url =
+    System.get_env("CMSBEAR_URL") ||
+      raise """
+      environment variable CMSBEAR_URL is missing.
+      Value might be e.g. https://new.joisig.com
+      """
+
   config :cmsbear,
     api_key: cmsbear_api_key,
-    file_root: cmsbear_file_root
+    file_root: cmsbear_file_root,
+    openid_connect_providers: [
+      google: [
+        discovery_document_uri: "https://accounts.google.com/.well-known/openid-configuration",
+        client_id: cmsbear_client_id,
+        client_secret: cmsbear_client_secret,
+        redirect_uri: "#{cmsbear_url}/auth/oidc/callback",
+        response_type: "code",
+        scope: "openid email profile"
+      ]
+    ]
 
   # ## Using releases
   #

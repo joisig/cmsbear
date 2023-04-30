@@ -38,9 +38,9 @@ config :phoenix, :json_library, Jason
 config :cmsbear, :openid_connect_providers,
   google: [
     discovery_document_uri: "https://accounts.google.com/.well-known/openid-configuration",
-    client_id: "503235626927-ti2snvjb37vtlevo8srsinaf8m24uvrt.apps.googleusercontent.com",
-    client_secret: "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",
-    redirect_uri: "https://joitestwww.eu.ngrok.io/auth/oidc/callback",
+    client_id: "FAKEFAKE-put this section in dev.secret.exs or use runtime.exs",
+    client_secret: "FAKEFAKE-put this section in dev.secret.exs or use runtime.exs",
+    redirect_uri: "FAKEFAKE-put this section in dev.secret.exs or use runtime.exs",
     response_type: "code",
     scope: "openid email profile"
   ]
