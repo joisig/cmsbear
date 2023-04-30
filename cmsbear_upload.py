@@ -67,7 +67,7 @@ def get_hashes_from_server():
 
 def main():
   print("URL is %s" % URL)
-  print("API key is %s" % API_KEY)
+  print("Using API key %s..." % API_KEY[:5])
 
   bear_db = os.path.join(HOME, 'Library/Group Containers/9K33E3U3T4.net.shinyfrog.bear/Application Data/database.sqlite')
   img_root = os.path.abspath(os.path.join(HOME, 'Library/Group Containers/9K33E3U3T4.net.shinyfrog.bear/Application Data/Local Files/Note Images'))
