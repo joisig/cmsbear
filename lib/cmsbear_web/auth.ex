@@ -9,11 +9,11 @@ defmodule CmsbearWeb.Auth do
   end
 
   def get_owner_email() do
-    "joi@quarter.is"  # TODO
+    Application.get_env(:cmsbear, :owner_email)
   end
 
   def get_public_tags() do
-    ["#cmsbear/page", "#cmsbear/post"]  # TODO
+    ["#cmsbear/page", "#cmsbear/post"]  #TODO nice if these were configurable
   end
 
   def is_logged_in_as_owner?(conn) do

@@ -74,9 +74,16 @@ if config_env() == :prod do
       Value might be e.g. https://new.joisig.com
       """
 
+  cmsbear_owner_email =
+    System.get_env("CMSBEAR_OWNER_EMAIL") ||
+      raise """
+      environment variable CMSBEAR_OWNER_EMAIL is missing.
+      """
+
   config :cmsbear,
     api_key: cmsbear_api_key,
     file_root: cmsbear_file_root,
+    owner_email: cmsbear_owner_email,
     openid_connect_providers: [
       google: [
         discovery_document_uri: "https://accounts.google.com/.well-known/openid-configuration",
