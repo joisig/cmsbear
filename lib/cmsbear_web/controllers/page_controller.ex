@@ -127,13 +127,5 @@ defmodule CmsbearWeb.PageController do
 
   # TODO date_to_xmlschema (see post layout in Bear)
 
-  # TODO page.url | relative_url in post layout footer
-
-  # TODO see application/ld+json on / page
-
-  # TODO TODOog:url in head include
-
-  # TODO in footer in Bear
-
   # TODO make off-site links target="_blank" by default
 end
