@@ -46,14 +46,14 @@ defmodule Cmsbear.MixProject do
       {:telemetry_metrics, "~> 0.6"},
       {:telemetry_poller, "~> 1.0"},
       {:gettext, "~> 0.18"},
-      {:jason, "~> 1.2"},
+      {:jason, "~> 1.4"},
       {:plug_cowboy, "~> 2.5"},
       {:uuid, "~> 1.1"},
       {:yaml_elixir, "~> 2.9"},
       {:timex, "~> 3.7"},
       {:earmark, "~> 1.4"},
       {:logger_file_backend, "~> 0.0.13"},
-      {:openid_connect, git: "https://github.com/CrankWheel/openid_connect", ref: "0d63a3c27d85cae2de93d67d3bc77adcf5d6110a"}
+      {:openid_connect, git: "https://github.com/CrankWheel/openid_connect", ref: "3ab6ca37940536949efc3f74d1ff19192ef7c073"}
     ]
   end
 
