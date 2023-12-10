@@ -25,7 +25,7 @@ defmodule Cmsbear.ReadBear do
   end
 
   def open_db() do
-    get_db_path() |> Sqlite3.open()
+    get_db_path() |> Sqlite3.open(mode: :readonly)
   end
 
   def db_results(conn, statement, headings, acc) do
