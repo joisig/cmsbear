@@ -65,7 +65,6 @@ defmodule Cmsbear.ReadBear do
       [%{file_uid: file_uid}] ->
         file_uid
       _ ->
-        IO.inspect {:error_getting_file_uid, path, uid, results}
         "missingimage"
     end
   end

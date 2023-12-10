@@ -94,10 +94,15 @@ defmodule Cmsbear.Render do
   when is_list(notes) and is_binary(layout) and is_map(layouts) and is_map(includes) do
     Enum.map(notes, fn note ->
       context = note.front_matter |> Map.put("layout", layout)
-      html = Cmsbear.Markup.note_to_html(note.text, note.uid)
+      html = Cmsbear.Markup.note_to_html(note.text |> trim_note_text(), note.uid)
       render_impl(html, context, layouts, includes)
     end)
     |> Enum.join("\n")
   end
 
+  def trim_note_text(note_text) do
+    trimmed = note_text |> String.slice(0..2000)
+    [made_safe|_] = String.split(trimmed, "```")
+    made_safe
+  end
 end
