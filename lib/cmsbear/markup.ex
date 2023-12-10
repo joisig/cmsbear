@@ -19,6 +19,7 @@ defmodule Cmsbear.Markup do
 
   def fixup_image_markup(html, uid) do
     Regex.replace(~r/\[\]\(([^)]+)\)(<!--.+?-->)?\s*(```cmsbear-metadata.*?```)?/s, html, fn (all, path, _comment, metadata_section) ->
+      path = URI.decode(path)
       case metadata_section do
         "" -> fixup_image_markup_impl(path, uid)
         _ -> fixup_image_markup_impl(path, uid, metadata_section)

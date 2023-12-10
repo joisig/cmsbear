@@ -31,6 +31,7 @@ defmodule CmsbearWeb.AssetsPlug do
 
   def call_when_asset(conn, bear_root) do
     [_, file_uid, filename] = conn.path_info
+    filename = URI.decode(filename)
 
     note_texts = ReadBear.notes_by_file(file_uid, filename)
     |> Enum.map(&(&1.text))
