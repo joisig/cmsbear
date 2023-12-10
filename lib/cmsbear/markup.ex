@@ -27,9 +27,10 @@ defmodule Cmsbear.Markup do
   end
 
   def fixup_file_markup(html, uid) do
-    Regex.replace(~r/\[file:([^\/]+\/([^]]+))]/, html, fn _, path, filename ->
-      file_uid = Cmsbear.ReadBear.get_file_uid(path, uid)
-      "Download: [#{filename}](/bfile/#{file_uid}/#{path})"
+    Regex.replace(~r/\[(.+?)\]\((.+?)\)<!--\s*{"embed":".+?", "preview":".+?"}\s*-->/, html, fn _, name, filename ->
+      filename = URI.decode(filename)
+      file_uid = Cmsbear.ReadBear.get_file_uid(filename, uid)
+      "File: [#{name}](/bfile/#{file_uid}/#{filename})"
     end)
   end
 
