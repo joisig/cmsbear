@@ -30,12 +30,9 @@ defmodule CmsbearWeb.AssetsPlug do
   end
 
   def call_when_asset(conn, bear_root) do
-    link_text = case conn.path_info do
-      ["bimg", guid, filename] -> "[image:#{guid}/#{URI.decode(filename)}]"
-      ["bfile", guid, filename] -> "[file:#{guid}/#{URI.decode(filename)}]"
-    end
+    [_, file_uid, filename] = conn.path_info
 
-    note_texts = ReadBear.notes_by_content(link_text)
+    note_texts = ReadBear.notes_by_file(file_uid, filename)
     |> Enum.map(&(&1.text))
     case Auth.can_access_content?(conn, note_texts) do
       true ->

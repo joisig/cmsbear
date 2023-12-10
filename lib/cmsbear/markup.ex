@@ -2,7 +2,7 @@ defmodule Cmsbear.Markup do
 
   @default_image_opts %{"attrib-style" => "max-width: 100%;"}
 
-  def fixup_image_markup_impl(path, metadata_section \\ "") do
+  def fixup_image_markup_impl(path, uid, metadata_section \\ "") do
     {title_part, metadata_section} = case metadata_section do
       "" ->
         {"", ""}
@@ -13,32 +13,36 @@ defmodule Cmsbear.Markup do
           String.replace(metadata_section, "```cmsbear-metadata", "```cmsbear-metadata-#{link_id}")
         }
     end
-    "![image](/bimg/#{path}#{title_part})\n#{metadata_section}"
+    file_uid = Cmsbear.ReadBear.get_file_uid(path, uid)
+    "[](/bimg/#{file_uid}/#{path}#{title_part})\n#{metadata_section}"
   end
 
-  def fixup_image_markup(html) do
-    Regex.replace(~r/\[image:([^]]+)\]\s*(```cmsbear-metadata.*?```)?/s, html, fn (all, path, metadata_section) ->
+  def fixup_image_markup(html, uid) do
+    Regex.replace(~r/\[\]\(([^)]+)\)(<!--.+?-->)?\s*(```cmsbear-metadata.*?```)?/s, html, fn (all, path, _comment, metadata_section) ->
       case metadata_section do
-        "" -> fixup_image_markup_impl(path)
-        _ -> fixup_image_markup_impl(path, metadata_section)
+        "" -> fixup_image_markup_impl(path, uid)
+        _ -> fixup_image_markup_impl(path, uid, metadata_section)
       end
     end)
   end
 
-  def fixup_file_markup(html) do
-    Regex.replace(~r/\[file:([^\/]+\/([^]]+))]/, html, fn _, path, filename -> "Download: [#{filename}](/bfile/#{path})" end)
+  def fixup_file_markup(html, uid) do
+    Regex.replace(~r/\[file:([^\/]+\/([^]]+))]/, html, fn _, path, filename ->
+      file_uid = Cmsbear.ReadBear.get_file_uid(path, uid)
+      "Download: [#{filename}](/bfile/#{file_uid}/#{path})"
+    end)
   end
 
-  def note_to_html(note) do
+  def note_to_html(note, uid) do
     note = note
-    |> fixup_image_markup()
-    |> fixup_file_markup()
+    |> fixup_image_markup(uid)
+    |> fixup_file_markup(uid)
     |> strip_tags()
     {:ok, ast, _} = EarmarkParser.as_ast(note)
     {ast, metadata_sections} = split_metadata_sections(ast)
     ast
-    |> handle_bold()
-    |> handle_italics()
+    #|> handle_bold()
+    #|> handle_italics()
     |> handle_images_and_figures(metadata_sections)
     |> Earmark.Transform.transform()
   end

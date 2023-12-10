@@ -40,7 +40,7 @@ defmodule CmsbearWeb.PageController do
   def serve_note(conn, note) do
     case Auth.can_access_content?(conn, [note.text]) do
       true ->
-        html = Markup.note_to_html(note.text)
+        html = Markup.note_to_html(note.text, note.uid)
         with_layout = Cmsbear.Render.load_files_and_render(html, note.front_matter)
         case note.front_matter["layout"] do
           "atomxml" ->

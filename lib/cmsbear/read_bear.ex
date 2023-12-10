@@ -54,6 +54,22 @@ defmodule Cmsbear.ReadBear do
     |> order_notes_by_main_date()
   end
 
+  def get_file_uid(path, uid) do
+    {:ok, conn} = open_db()
+    {:ok, statement} = Sqlite3.prepare(
+      conn, "select f.ZUNIQUEIDENTIFIER from ZSFNOTEFILE f inner join ZSFNOTE n on f.ZNOTE = n.Z_PK where n.ZUNIQUEIDENTIFIER = ?1 and f.ZFILENAME = ?2")
+    :ok = Sqlite3.bind(conn, statement, [uid, path])
+    results = db_results(conn, statement, [:file_uid], [])
+    :ok = Sqlite3.release(conn, statement)
+    case results do
+      [%{file_uid: file_uid}] ->
+        file_uid
+      _ ->
+        IO.inspect {:error_getting_file_uid, path, uid, results}
+        "missingimage"
+    end
+  end
+
   def fm_val_to_timestamp(fm, key) do
     case Map.get(fm, key, nil) do
       nil ->
@@ -197,6 +213,12 @@ defmodule Cmsbear.ReadBear do
     get_notes(
       "select ZTEXT, ZTITLE, ZUNIQUEIDENTIFIER, ZCREATIONDATE, ZMODIFICATIONDATE from zsfnote where zencrypted = 0 and zarchived = 0 and ztrashed =0 and ZUNIQUEIDENTIFIER = ?1",
       [id])
+  end
+
+  def notes_by_file(file_uid, file_path) do
+    notes = get_notes(
+      "select n.ZTEXT, n.ZTITLE, n.ZUNIQUEIDENTIFIER, n.ZCREATIONDATE, n.ZMODIFICATIONDATE from ZSFNOTE n inner join ZSFNOTEFILE f on f.ZNOTE = n.Z_PK where n.zencrypted = 0 and n.zarchived = 0 and n.ztrashed = 0 and f.ZUNIQUEIDENTIFIER = ?1 and f.ZFILENAME = ?2",
+      [file_uid, file_path])
   end
 
   def notes_by_content(content_string, exclude_frontmatter_matches \\ true) do

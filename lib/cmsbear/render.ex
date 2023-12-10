@@ -94,7 +94,7 @@ defmodule Cmsbear.Render do
   when is_list(notes) and is_binary(layout) and is_map(layouts) and is_map(includes) do
     Enum.map(notes, fn note ->
       context = note.front_matter |> Map.put("layout", layout)
-      html = Cmsbear.Markup.note_to_html(note.text |> String.slice(0..2000))
+      html = Cmsbear.Markup.note_to_html(note.text, note.uid)
       render_impl(html, context, layouts, includes)
     end)
     |> Enum.join("\n")
