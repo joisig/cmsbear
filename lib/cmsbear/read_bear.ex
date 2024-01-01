@@ -57,7 +57,7 @@ defmodule Cmsbear.ReadBear do
   def get_file_uid(path, uid) do
     {:ok, conn} = open_db()
     {:ok, statement} = Sqlite3.prepare(
-      conn, "select f.ZUNIQUEIDENTIFIER from ZSFNOTEFILE f inner join ZSFNOTE n on f.ZNOTE = n.Z_PK where n.ZUNIQUEIDENTIFIER = ?1 and f.ZFILENAME = ?2")
+      conn, "select f.ZUNIQUEIDENTIFIER from ZSFNOTEFILE f inner join ZSFNOTE n on f.ZNOTE = n.Z_PK where n.ZUNIQUEIDENTIFIER = ?1 and f.ZFILENAME = ?2 and f.ZUNUSED = 0")
     :ok = Sqlite3.bind(conn, statement, [uid, path])
     results = db_results(conn, statement, [:file_uid], [])
     :ok = Sqlite3.release(conn, statement)
